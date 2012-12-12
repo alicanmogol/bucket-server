@@ -1,6 +1,16 @@
+# java related
 *.class
-
-# Package Files #
-*.jar
 *.war
 *.ear
+
+# other files
+*.bak
+*~
+.gitignore
+
+# copied from original
+logs
+logs/*
+tmp
+tmp/*
+.history
