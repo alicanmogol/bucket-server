@@ -2,29 +2,22 @@ package com.fererlab.dto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.TreeMap;
 
 /**
  * acm 10/16/12 5:37 PM
  */
-public class ParamMap<K, V> extends ConcurrentHashMap<K, V> {
+public class ParamMap<K extends String, V extends Param<K, Object>> extends TreeMap<K, V> {
 
-    private List<Param<K, V>> params = new ArrayList<Param<K, V>>();
+    private List<Param<K, Object>> paramList = new ArrayList<>();
 
-    public void addParam(Param<K, V> param) {
-        params.add(param);
-        put(param.getKey(), param.getValue());
+
+    public void addParam(V param) {
+        paramList.add(param);
+        put(param.getKey(), param);
     }
 
-    public void addParams(List<Param<K, V>> params) {
-        this.params = params;
-        for (Param<K, V> param : params) {
-            addParam(param);
-        }
+    public List<Param<K, Object>> getParamList() {
+        return paramList;
     }
-
-    public List<Param<K, V>> getParams() {
-        return params;
-    }
-
 }

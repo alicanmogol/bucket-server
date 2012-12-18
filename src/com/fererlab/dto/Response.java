@@ -3,28 +3,26 @@ package com.fererlab.dto;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 /**
  * acm 10/15/12 4:16 PM
  */
 public class Response implements Serializable {
 
-    private List<Param> params;
+    private ParamMap<String, Param<String, Object>> params = new ParamMap<>();
     private Session session;
     private Status status;
     private String content;
 
-    public Response(List<Param> params, Session session, Status status, String content) {
-        this.params = Collections.unmodifiableList(params);
+    public Response(ParamMap<String, Param<String, Object>> params, Session session, Status status, String content) {
+        this.params = params;
         this.session = session;
         this.status = status;
         this.content = content;
     }
 
-    public List<Param> getParams() {
+    public ParamMap<String, Param<String, Object>> getParams() {
         return params;
     }
 
@@ -42,29 +40,39 @@ public class Response implements Serializable {
 
     public byte[] write() {
         StringBuilder sb = new StringBuilder();
-        sb.append(status.getStatus());
+        // add response code
+        sb.append("HTTP/1.1 ");
+        sb.append(200);//params.get(ResponseKeys.STATUS.getValue()).getValue()
         sb.append(" ");
-        sb.append(status.getMessage());
+        sb.append("OK");//params.get(ResponseKeys.MESSAGE.getValue()).getValue()
         sb.append("\n");
 
+
+        // add date
         sb.append("Date: ");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM yyyy  HH:mm:ss z");
         sb.append(simpleDateFormat.format(new Date()));
         sb.append("\n");
 
-        sb.append("Expires:  -1\n");
-        sb.append("Cache-Control:  private, max-age=0\n");
-        sb.append("Content-Type:  text/html; charset=UTF-8\n");
-        sb.append("Set-Cookie:  ");
+        // set cookie
         sb.append(getSession().toCookie());
-        sb.append("\n");
 
-        sb.append("Transfer-Encoding:  chunked\n");
+        // add all the params
+        for (Param<String, Object> param : params.getParamList()) {
+            sb.append(param.getKey());
+            sb.append(": ");
+            sb.append(param.getValue());
+            sb.append("\n");
+        }
 
-        sb.append("Server:  bucket\n");
+        // end headers
+        sb.append("\r\n");
 
+
+        // add content
         sb.append(content);
 
+        // append the delimiters
         sb.append("\n\r\n\r");
 
         try {
@@ -72,5 +80,6 @@ public class Response implements Serializable {
         } catch (UnsupportedEncodingException e) {
             return sb.toString().getBytes();
         }
+
     }
 }

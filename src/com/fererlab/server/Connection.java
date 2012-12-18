@@ -15,10 +15,10 @@ import java.util.Random;
 public class Connection {
 
     private String id;
+    private Socket socket;
     private InputStream inputStream;
     private OutputStream outputStream;
     private String rawRequest;
-    private Socket socket;
     private Request request;
     private Response response;
 

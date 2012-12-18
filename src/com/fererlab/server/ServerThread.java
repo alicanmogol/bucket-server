@@ -62,9 +62,7 @@ public class ServerThread extends Thread {
 
                 // pass the connection to handler and run
                 ConnectionHandler connectionHandler = new ConnectionHandler(connection);
-                log("--------before");
                 pool.execute(connectionHandler);
-                log("--------after");
             }
         } catch (Exception e) {
             log("serverThread with port: " + port + " got an exception, will not listen anymore, needs restart, exception: " + e);

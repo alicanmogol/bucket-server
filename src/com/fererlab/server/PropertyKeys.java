@@ -5,7 +5,10 @@ package com.fererlab.server;
  */
 public enum PropertyKeys {
 
-    LISTEN_PORTS("listen.ports"), MAXIMUM_THREAD_COUNT("maximum.thread.count"), CONFIG_FILE("config");
+    LISTEN_PORTS("listen.ports"),
+    MAXIMUM_THREAD_COUNT("maximum.thread.count"),
+    LOGGER_LEVEL("logger.level"),
+    CONFIG_FILE("config");
 
     private final String value;
 

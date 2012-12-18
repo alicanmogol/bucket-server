@@ -7,7 +7,6 @@ public enum ParamRelation {
 
     EQ("equal"),
     NE("not equal"),
-    IEQ("case insensitive equal"),
     BETWEEN("between"),
     GT("greater than"),
     GE("greater than or equal to"),

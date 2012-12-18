@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -21,13 +20,9 @@ public class Server {
     }
 
     public Server(String[] args) {
-        prepare();
         parseArgs(args);
+        prepare();
         runServer();
-    }
-
-    private void prepare() {
-        logger.setLevel(Level.INFO);
     }
 
     private void parseArgs(String[] args) {
@@ -49,6 +44,10 @@ public class Server {
         } else {
             log("no args, using defaults");
         }
+    }
+
+    private void prepare() {
+        //logger.setLevel(Level.INFO);
     }
 
     private void runServer() {
