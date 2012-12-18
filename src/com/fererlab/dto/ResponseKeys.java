@@ -11,6 +11,7 @@ public enum ResponseKeys {
     CACHE_CONTROL("Cache-Control"),
     CONTENT_TYPE("Content-Type"),
     CONTENT_LENGTH("Content-Length"),
+    PROTOCOL("PROTOCOL"),
     SERVER("Server");
 
 

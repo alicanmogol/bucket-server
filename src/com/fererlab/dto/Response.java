@@ -41,10 +41,10 @@ public class Response implements Serializable {
     public byte[] write() {
         StringBuilder sb = new StringBuilder();
         // add response code
-        sb.append("HTTP/1.1 ");
-        sb.append(200);//params.get(ResponseKeys.STATUS.getValue()).getValue()
+        sb.append(params.get(ResponseKeys.PROTOCOL.getValue()).getValue());
+        sb.append(params.get(ResponseKeys.STATUS.getValue()).getValue());
         sb.append(" ");
-        sb.append("OK");//params.get(ResponseKeys.MESSAGE.getValue()).getValue()
+        sb.append(params.get(ResponseKeys.MESSAGE.getValue()).getValue());
         sb.append("\n");
 
 

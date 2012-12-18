@@ -7,6 +7,8 @@
 *.bak
 *~
 .gitignore
+.idea
+.idea/*
 
 # copied from original
 logs
