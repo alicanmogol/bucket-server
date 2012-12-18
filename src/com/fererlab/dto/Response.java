@@ -42,6 +42,7 @@ public class Response implements Serializable {
         StringBuilder sb = new StringBuilder();
         // add response code
         sb.append(params.get(ResponseKeys.PROTOCOL.getValue()).getValue());
+        sb.append(" ");
         sb.append(params.get(ResponseKeys.STATUS.getValue()).getValue());
         sb.append(" ");
         sb.append(params.get(ResponseKeys.MESSAGE.getValue()).getValue());

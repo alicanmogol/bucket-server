@@ -47,7 +47,7 @@ public class ApplicationHandler {
                         "</html>\n";
                 return new Response(
                         new ParamMap<String, Param<String, Object>>() {{
-                            addParam(new Param<String, Object>(ResponseKeys.PROTOCOL.getValue(), "" + request.getParams().get(RequestKeys.PROTOCOL.getValue())));
+                            addParam(new Param<String, Object>(ResponseKeys.PROTOCOL.getValue(), request.getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
                             addParam(new Param<String, Object>(ResponseKeys.STATUS.getValue(), "" + Status.STATUS_SUCCESS.getStatus()));
                             addParam(new Param<String, Object>(ResponseKeys.MESSAGE.getValue(), Status.STATUS_SUCCESS.getMessage()));
                             addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(), "-1"));

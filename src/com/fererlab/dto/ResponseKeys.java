@@ -5,13 +5,13 @@ package com.fererlab.dto;
  */
 public enum ResponseKeys {
 
-    STATUS("status"),
-    MESSAGE("message"),
+    PROTOCOL("PROTOCOL"),
+    STATUS("STATUS"),
+    MESSAGE("MESSAGE"),
     EXPIRES("Expires"),
     CACHE_CONTROL("Cache-Control"),
     CONTENT_TYPE("Content-Type"),
     CONTENT_LENGTH("Content-Length"),
-    PROTOCOL("PROTOCOL"),
     SERVER("Server");
 
 
