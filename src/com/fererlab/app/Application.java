@@ -8,6 +8,6 @@ import com.fererlab.dto.Response;
  */
 public interface Application {
 
-    Response runApplication(Request request);
+    Response runApplication(final Request request);
 
 }

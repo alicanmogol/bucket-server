@@ -15,6 +15,7 @@ public class ApplicationHandler {
         try {
             if (request.getParams().containsKey(RequestKeys.URI.getValue())) {
                 String uri = (String) request.getParams().get(RequestKeys.URI.getValue()).getValue();
+                log("found uri: " + uri);
                 Application application = findApplicationFromURI(uri);
                 if (application != null) {
                     log("found application for this uri: " + uri + ", will run application");
@@ -25,43 +26,29 @@ public class ApplicationHandler {
             } else {
                 log("request does not have any param named 'URI', no application to run");
             }
-            return new Response(new ParamMap<String, Param<String, Object>>(), new Session(), Status.STATUS_NOT_FOUND, "");
+            return new Response(new ParamMap<>(), new Session(), Status.STATUS_NOT_FOUND, "");
         } catch (Exception e) {
-            return new Response(new ParamMap<String, Param<String, Object>>(), new Session(), Status.STATUS_SERVICE_UNAVAILABLE, "");
+            return new Response(new ParamMap<>(), new Session(), Status.STATUS_SERVICE_UNAVAILABLE, "");
         }
     }
 
     private Application findApplicationFromURI(String uri) {
-        // TODO: find the application / flow and run that with request
-
-        return new Application() {
-            @Override
-            public Response runApplication(final Request request) {
-                final String content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        " <head>\n" +
-                        " </head>\n" +
-                        " <body>\n" +
-                        "   <p>Page content...</p>\n" +
-                        " </body>\n" +
-                        "</html>\n";
-                return new Response(
-                        new ParamMap<String, Param<String, Object>>() {{
-                            addParam(new Param<String, Object>(ResponseKeys.PROTOCOL.getValue(), request.getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
-                            addParam(new Param<String, Object>(ResponseKeys.STATUS.getValue(), "" + Status.STATUS_SUCCESS.getStatus()));
-                            addParam(new Param<String, Object>(ResponseKeys.MESSAGE.getValue(), Status.STATUS_SUCCESS.getMessage()));
-                            addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(), "-1"));
-                            addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(), "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0"));
-                            addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
-                            addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), "text/html; charset=UTF-8"));
-                            addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), content.length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
-                        }},
-                        new Session(),
-                        Status.STATUS_SUCCESS,
-                        content
-                );
+        String applicationName = uri;
+        for(String part: uri.split("/")){
+            if(!part.isEmpty()){
+                applicationName = part;
+                break;
             }
-        };
+        }
+        if (ApplicationDescriptionHandler.getInstance().applicationExists(applicationName)) {
+            try {
+                return ApplicationDescriptionHandler.getInstance().getApplication(applicationName);
+            } catch (NoApplicationAvailableException e) {
+                log("no application available, e: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     private void log(String log) {

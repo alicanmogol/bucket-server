@@ -69,7 +69,6 @@ public class Response implements Serializable {
         // end headers
         sb.append("\r\n");
 
-
         // add content
         sb.append(content);
 

@@ -1,6 +1,7 @@
 package com.ferer.server.test;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 /**
@@ -17,16 +18,27 @@ public class MultipleRequester {
     }
 
     private void runTest() {
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1; i++) {
             new Thread() {
                 @Override
                 public void run() {
                     try {
-                        System.out.println(Thread.currentThread().getId() + ": requesting");
-                        URL url = new URL("http://127.0.0.1:9095/");
-                        System.out.println(Thread.currentThread().getId() + ": content" + url.getContent());
-                    } catch (IOException e) {
-                        System.out.println(Thread.currentThread().getId() + ": got response");
+                        URL url = new URL("http://127.0.0.1:9095");
+                        System.out.println(Thread.currentThread().getId() + ": requesting, " + url);
+                        Object content = url.getContent();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        if (content instanceof InputStream) {
+                            InputStreamReader inputStreamReader = new InputStreamReader((InputStream) content);
+                            int c;
+                            char ch;
+                            while ((c = inputStreamReader.read()) != -1) {
+                                ch = (char) c;
+                                stringBuilder.append(ch);
+                            }
+                        }
+                        System.out.println(Thread.currentThread().getId() + ": content: " + stringBuilder);
+                    } catch (Exception e) {
+                        System.out.println(Thread.currentThread().getId() + ": got Exception!");
                     }
                 }
             }.start();

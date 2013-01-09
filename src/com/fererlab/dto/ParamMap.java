@@ -11,7 +11,6 @@ public class ParamMap<K extends String, V extends Param<K, Object>> extends Tree
 
     private List<Param<K, Object>> paramList = new ArrayList<>();
 
-
     public void addParam(V param) {
         paramList.add(param);
         put(param.getKey(), param);

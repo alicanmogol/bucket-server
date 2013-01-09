@@ -16,7 +16,27 @@ public class RegexpTester {
 
     public RegexpTester() {
         //runRegexpTest1();
-        runRegexpTest2();
+        //runRegexpTest2();
+        runRegexpTest3();
+    }
+
+    private void runRegexpTest3() {
+        String rawRequest = "" +
+                "GET /some/uri/with?multiple=params&like=this HTTP/1.1\n" +
+                "GET /some/uri/with?multiple=params&like=this HTTP/1.1   \n" +
+                "User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.4 (KHTML, like Gecko) Chrome/22.0.1229.94 Safari/537.4\n" +
+                "Cookie: bbsessionhash=ef0382f877cd6743c53e78f2bc3077bc; bblastvisit=1355751890; bblastactivity=0\n" +
+                "Accept-Language: en-US,en;q=0.8\n" +
+                "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3\n" +
+                "";
+        String[] requestRows = rawRequest.split("\n");
+        for (String requestRow : requestRows) {
+            String[] splits = requestRow.split("(^GET )|(^POST )|(^PUT )|(^DELETE )", 2);   // |([^ª]\n)
+            if (splits.length > 1) {
+                String[] strs = requestRow.split(" ", 2);
+                System.out.println(strs[0].trim() + " " + strs[1].trim());
+            }
+        }
     }
 
     private void runRegexpTest2() {

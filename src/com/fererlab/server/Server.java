@@ -1,5 +1,7 @@
 package com.fererlab.server;
 
+import com.fererlab.app.ApplicationDescriptionHandler;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ public class Server {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private HashMap<String, String> argMap = new HashMap<>();
     private Properties properties = null;
+    private ApplicationDescriptionHandler applicationDescriptionHandler;
 
     public static void main(String[] args) {
         new Server(args);
@@ -47,7 +50,20 @@ public class Server {
     }
 
     private void prepare() {
-        //logger.setLevel(Level.INFO);
+        // Prepare the application descriptions
+        String applicationDescriptionFile = getProperties().getProperty(PropertyKeys.APP_DESC_FILE.getValue());
+        if (applicationDescriptionFile == null) {
+            applicationDescriptionFile = getClass().getResource(".").getPath() + "applications.properties";
+            log("no applications description file in arg map, using default, configFileName: " + applicationDescriptionFile);
+        }
+        try {
+            ApplicationDescriptionHandler.getInstance().reloadApplicationDescriptions(applicationDescriptionFile);
+        } catch (IOException e) {
+            log("could not load the application description file, e: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // prepare the logging
     }
 
     private void runServer() {

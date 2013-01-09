@@ -8,7 +8,8 @@ public enum PropertyKeys {
     LISTEN_PORTS("listen.ports"),
     MAXIMUM_THREAD_COUNT("maximum.thread.count"),
     LOGGER_LEVEL("logger.level"),
-    CONFIG_FILE("config");
+    CONFIG_FILE("config"),
+    APP_DESC_FILE("application.description.file");
 
     private final String value;
 
