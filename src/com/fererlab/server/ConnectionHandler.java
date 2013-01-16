@@ -4,6 +4,7 @@ import com.fererlab.app.ApplicationHandler;
 import com.fererlab.dto.*;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -44,6 +45,7 @@ public class ConnectionHandler implements Runnable {
                 try {
                     connection.getOutputStream().write("SOCKET_EXCEPTION".getBytes());
                 } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
             log("exception occurred: " + e);
@@ -53,18 +55,21 @@ public class ConnectionHandler implements Runnable {
                 try {
                     connection.getInputStream().close();
                 } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
             if (connection.getOutputStream() != null) {
                 try {
                     connection.getOutputStream().close();
                 } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
             if (connection.getSocket() != null) {
                 try {
                     connection.getSocket().close();
                 } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
             connection.setSocket(null);
@@ -97,6 +102,16 @@ public class ConnectionHandler implements Runnable {
         ParamMap<String, Param<String, Object>> headers = new ParamMap<>();
         ParamMap<String, Param<String, Object>> params = new ParamMap<>();
 
+        // add defaults request method
+        params.addParam(new Param<String, Object>(RequestKeys.REQUEST_METHOD.getValue(), "GET"));
+        params.addParam(new Param<String, Object>(RequestKeys.URI.getValue(), ""));
+        params.addParam(new Param<String, Object>(RequestKeys.PROTOCOL.getValue(), "HTTP/1.1"));
+
+        // add default headers
+        headers.addParam(new Param<String, Object>(RequestKeys.HOST.getValue(), "localhost"));
+        headers.addParam(new Param<String, Object>(RequestKeys.HOST_NAME.getValue(), "localhost"));
+        headers.addParam(new Param<String, Object>(RequestKeys.HOST_PORT.getValue(), 80));
+
         /*
         // raw request should be something like below;
 
@@ -106,6 +121,7 @@ public class ConnectionHandler implements Runnable {
 
         */
         String[] requestRows = connection.getRawRequest().split("\n");
+
 
         boolean requestUriFound = false;
         for (String requestRow : requestRows) {
@@ -120,7 +136,7 @@ public class ConnectionHandler implements Runnable {
 
             String[] ifContainsMethodSecondPartIsUri;
             if (!requestUriFound) {
-                ifContainsMethodSecondPartIsUri = requestRow.split("(^GET )|(^POST )|(^PUT )|(^DELETE )", 2);
+                ifContainsMethodSecondPartIsUri = requestRow.split("(^GET )|(^POST )|(^PUT )|(^DELETE )|(^HEAD )|(^OPTIONS )|(^PROPFIND )|(^COPY )|(^MOVE )", 2);
             } else {
                 ifContainsMethodSecondPartIsUri = null;
             }
@@ -152,7 +168,7 @@ public class ConnectionHandler implements Runnable {
                     String[] requestParams = uriAndParams[1].split("&");
                     // requestParams    a=1&b<2&c>3&d=4&e!=5&5<f<7&g<=7&h>=8
                     for (String paramKeyValue : requestParams) {
-                        String[] paramArr = null;
+                        String[] paramArr;
 
                         paramArr = paramKeyValue.split("(<=)|(%3C=)", 2);
                         if (paramArr.length == 2) {
@@ -208,7 +224,13 @@ public class ConnectionHandler implements Runnable {
             // these lines are the headers
             else {
                 String[] keyValuePair = requestRow.split(":", 2);
-                headers.addParam(new Param<String, Object>(keyValuePair[0], keyValuePair[1].trim()));
+                if (keyValuePair.length > 1) {
+                    headers.addParam(new Param<String, Object>(keyValuePair[0], keyValuePair[1].trim()));
+                } else {
+                    // this is nor HTTP request neither header
+                    // add it as key
+                    headers.addParam(new Param<String, Object>(keyValuePair[0], ""));
+                }
             }
 
         }
@@ -235,6 +257,19 @@ public class ConnectionHandler implements Runnable {
             // do nothing
         }
 
+        // check if the header contains HOST
+        if (headers.containsKey(RequestKeys.HOST.getValue())) {
+            Param<String, Object> hostParam = headers.get(RequestKeys.HOST.getValue());
+            String host = hostParam.getValue().toString();
+            String[] hostNamePort = host.split(":");
+            if (hostNamePort.length == 2) {
+                headers.addParam(new Param<String, Object>(RequestKeys.HOST_NAME.getValue(), hostNamePort[0]));
+                headers.addParam(new Param<String, Object>(RequestKeys.HOST_PORT.getValue(), hostNamePort[1]));
+            } else if (hostNamePort.length == 1) {
+                headers.addParam(new Param<String, Object>(RequestKeys.HOST_NAME.getValue(), hostNamePort[0]));
+            }
+        }
+
         // set request to connection object
         connection.setRequest(new Request(params, headers, session));
 
@@ -255,6 +290,7 @@ public class ConnectionHandler implements Runnable {
         connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
         connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), "text/html; charset=UTF-8"));
         connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
+        connection.getResponse().getSession().put("server-added-unique-request-id", "SA-URID" + (new Random().nextInt()));
     }
 
     private void sendResponseBack() throws IOException {

@@ -9,18 +9,18 @@ public class Request implements Serializable {
 
     private ParamMap<String, Param<String, Object>> headers;
     private ParamMap<String, Param<String, Object>> params;
-    private Session session;
+    private Session<String, String> session;
 
     public Request() {
     }
 
-    public Request(ParamMap<String, Param<String, Object>> params, ParamMap<String, Param<String, Object>> headers, Session session) {
+    public Request(ParamMap<String, Param<String, Object>> params, ParamMap<String, Param<String, Object>> headers, Session<String, String> session) {
         this.session = session;
         this.params = params;
         this.headers = headers;
     }
 
-    public Session getSession() {
+    public Session<String, String> getSession() {
         return session;
     }
 

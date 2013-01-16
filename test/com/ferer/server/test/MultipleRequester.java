@@ -18,13 +18,14 @@ public class MultipleRequester {
     }
 
     private void runTest() {
-        for (int i = 0; i < 1; i++) {
+        final long startTime = System.currentTimeMillis();
+        for (int i = 0; i < 100; i++) {
             new Thread() {
                 @Override
                 public void run() {
                     try {
-                        URL url = new URL("http://127.0.0.1:9095");
-                        System.out.println(Thread.currentThread().getId() + ": requesting, " + url);
+                        URL url = new URL("http://localhost:9091/sample.application");
+                        //System.out.println(Thread.currentThread().getId() + ": requesting, " + url);
                         Object content = url.getContent();
                         StringBuilder stringBuilder = new StringBuilder();
                         if (content instanceof InputStream) {
@@ -36,10 +37,11 @@ public class MultipleRequester {
                                 stringBuilder.append(ch);
                             }
                         }
-                        System.out.println(Thread.currentThread().getId() + ": content: " + stringBuilder);
+                        //System.out.println(Thread.currentThread().getId() + ": content: " + stringBuilder);
                     } catch (Exception e) {
-                        System.out.println(Thread.currentThread().getId() + ": got Exception!");
+                        //System.out.println(Thread.currentThread().getId() + ": got Exception!");
                     }
+                    System.out.println("completed in: " + (System.currentTimeMillis() - startTime) + " milliseconds");
                 }
             }.start();
         }

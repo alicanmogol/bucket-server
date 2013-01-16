@@ -5,7 +5,7 @@ import java.util.TreeMap;
 /**
  * acm 10/15/12 4:27 PM
  */
-public class Session<K, V> extends TreeMap<K, V> {
+public class Session<K extends String, V extends String> extends TreeMap<K, V> {
 
     public String toCookie() {
         StringBuilder cookie = new StringBuilder();

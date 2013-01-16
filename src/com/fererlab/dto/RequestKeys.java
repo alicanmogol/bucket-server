@@ -10,8 +10,12 @@ public enum RequestKeys {
     IP("IP"),
     PORT("PORT"),
     URI("URI"),
+    HOST("Host"),
+    HOST_NAME("HOST_NAME"),
+    HOST_PORT("HOST_PORT"),
     QUERY_STRING("QUERY_STRING"),
     REQUEST_METHOD("REQUEST_METHOD"),
+    APPLICATION_REQUEST("APPLICATION_REQUEST"),
     HEADER_NAMES("HEADER_NAMES");
 
     private final String value;

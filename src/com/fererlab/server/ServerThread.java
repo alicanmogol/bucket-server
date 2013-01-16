@@ -32,7 +32,7 @@ public class ServerThread extends Thread {
     public void run() {
         try {
             log("ServerThread will listen port: " + port);
-            serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(port, Integer.MAX_VALUE);
 
             ExecutorService pool = Executors.newFixedThreadPool(maximumThreadCount);
             Socket socket = null;

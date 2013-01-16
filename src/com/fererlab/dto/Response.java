@@ -11,11 +11,11 @@ import java.util.Date;
 public class Response implements Serializable {
 
     private ParamMap<String, Param<String, Object>> params = new ParamMap<>();
-    private Session session;
+    private Session<String, String> session;
     private Status status;
     private String content;
 
-    public Response(ParamMap<String, Param<String, Object>> params, Session session, Status status, String content) {
+    public Response(ParamMap<String, Param<String, Object>> params, Session<String, String> session, Status status, String content) {
         this.params = params;
         this.session = session;
         this.status = status;
@@ -26,7 +26,7 @@ public class Response implements Serializable {
         return params;
     }
 
-    public Session getSession() {
+    public Session<String, String> getSession() {
         return session;
     }
 
