@@ -294,10 +294,7 @@ public class ApplicationDescriptionHandler {
                 }
             };
         } else if (applicationPathAndClass.startsWith("dir://")) {
-            List<URL> files = new ArrayList<>();
-            findFilesRecursively(pathAndClassName[0].substring("dir://".length()), files);
-
-            urlsToLoad = files.toArray(new URL[files.size()]);
+            urlsToLoad = new URL[]{new URL("file://" + pathAndClassName[0].substring("dir://".length()))};
             className = pathAndClassName[1];
         }
         URLClassLoader classLoader = new URLClassLoader(
@@ -307,26 +304,5 @@ public class ApplicationDescriptionHandler {
         Class classToLoad = Class.forName(className, true, classLoader);
         return (Application) classToLoad.newInstance();
     }
-
-    private void findFilesRecursively(String path, List<URL> urls) {
-        File file = new File(path);
-        if (file.exists()) {
-            File[] files = file.listFiles();
-            if (files != null) {
-                for (File f : files) {
-                    if (f.isDirectory()) {
-                        findFilesRecursively(f.getAbsolutePath(), urls);
-                    } else {
-                        try {
-                            urls.add(f.toURI().toURL());
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
 
 }
