@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 public class Status implements Serializable {
 
-    public final static Status STATUS_SUCCESS = new Status(200, "OK");
+    public final static Status STATUS_OK = new Status(200, "OK");
     public final static Status STATUS_FORBIDDEN = new Status(403, "FORBIDDEN");
     public final static Status STATUS_NOT_FOUND = new Status(403, "NOT FOUND");
     public final static Status STATUS_SERVICE_UNAVAILABLE = new Status(503, "SERVICE UNAVAILABLE");

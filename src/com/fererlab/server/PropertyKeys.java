@@ -1,7 +1,7 @@
 package com.fererlab.server;
 
 /**
- * acm | 12/11/12 7:26 PM
+ * acm | 12/11/12
  */
 public enum PropertyKeys {
 

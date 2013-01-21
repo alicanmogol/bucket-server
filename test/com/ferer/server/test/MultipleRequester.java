@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 /**
- * acm | 12/12/12 3:34 PM
+ * acm | 12/12/12
  */
 public class MultipleRequester {
 

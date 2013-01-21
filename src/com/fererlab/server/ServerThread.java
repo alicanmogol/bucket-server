@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 /**
- * acm | 12/11/12 10:19 PM
+ * acm | 12/11/12
  */
 public class ServerThread extends Thread {
 

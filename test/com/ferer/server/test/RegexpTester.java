@@ -6,7 +6,7 @@ import com.fererlab.dto.ParamRelation;
 import java.util.Arrays;
 
 /**
- * acm | 12/17/12 4:09 PM
+ * acm | 12/17/12
  */
 public class RegexpTester {
 

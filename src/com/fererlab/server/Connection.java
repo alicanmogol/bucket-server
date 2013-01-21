@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.Random;
 
 /**
- * acm | 12/11/12 10:57 PM
+ * acm | 12/11/12
  */
 public class Connection {
 

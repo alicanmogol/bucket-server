@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * acm | 1/4/13 10:38 AM
+ * acm | 1/4/13
  */
 public class ApplicationDescriptionHandler {
 

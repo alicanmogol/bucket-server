@@ -5,7 +5,7 @@ import com.fererlab.dto.*;
 import java.util.logging.Logger;
 
 /**
- * acm | 12/12/12 12:01 AM
+ * acm | 12/12/12
  */
 public class ApplicationHandler {
 

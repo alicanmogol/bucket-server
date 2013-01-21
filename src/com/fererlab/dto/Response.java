@@ -10,42 +10,68 @@ import java.util.Date;
  */
 public class Response implements Serializable {
 
-    private ParamMap<String, Param<String, Object>> params = new ParamMap<>();
+    private ParamMap<String, Param<String, Object>> headers;
     private Session<String, String> session;
     private Status status;
     private String content;
 
-    public Response(ParamMap<String, Param<String, Object>> params, Session<String, String> session, Status status, String content) {
-        this.params = params;
+    public Response(ParamMap<String, Param<String, Object>> headers, Session<String, String> session, Status status, String content) {
+        this.headers = headers;
         this.session = session;
         this.status = status;
         this.content = content;
     }
 
-    public ParamMap<String, Param<String, Object>> getParams() {
-        return params;
+    public ParamMap<String, Param<String, Object>> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(ParamMap<String, Param<String, Object>> headers) {
+        this.headers = headers;
     }
 
     public Session<String, String> getSession() {
         return session;
     }
 
+    public void setSession(Session<String, String> session) {
+        this.session = session;
+    }
+
     public Status getStatus() {
         return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public String getContent() {
         return content;
     }
 
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return "Response{" +
+                "headers=" + headers +
+                ", session=" + session +
+                ", status=" + status +
+                ", content='" + content + '\'' +
+                '}';
+    }
+
     public byte[] write() {
         StringBuilder sb = new StringBuilder();
         // add response code
-        sb.append(params.get(ResponseKeys.PROTOCOL.getValue()).getValue());
+        sb.append(headers.get(ResponseKeys.PROTOCOL.getValue()).getValue());
         sb.append(" ");
-        sb.append(params.get(ResponseKeys.STATUS.getValue()).getValue());
+        sb.append(status.getStatus());
         sb.append(" ");
-        sb.append(params.get(ResponseKeys.MESSAGE.getValue()).getValue());
+        sb.append(status.getMessage());
         sb.append("\n");
 
 
@@ -58,8 +84,8 @@ public class Response implements Serializable {
         // set cookie
         sb.append(getSession().toCookie());
 
-        // add all the params
-        for (Param<String, Object> param : params.getParamList()) {
+        // add all the headers
+        for (Param<String, Object> param : headers.getParamList()) {
             sb.append(param.getKey());
             sb.append(": ");
             sb.append(param.getValue());
@@ -82,4 +108,22 @@ public class Response implements Serializable {
         }
 
     }
+
+    /*
+    static create response method
+     */
+
+    public static Response ok(Request request, String content) {
+        return create(request, content, Status.STATUS_OK);
+    }
+
+    public static Response create(final Request request, String content, Status status) {
+        return new Response(
+                new ParamMap<String, Param<String, Object>>(),
+                request.getSession(),
+                status,
+                content
+        );
+    }
+
 }

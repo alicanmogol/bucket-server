@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * acm | 12/11/12 10:52 PM
+ * acm | 12/11/12 
  */
 public class ConnectionHandler implements Runnable {
 
@@ -282,14 +282,14 @@ public class ConnectionHandler implements Runnable {
     }
 
     private void addResponseHeaders() {
-        connection.getResponse().getParams().addParam(new Param<>(ResponseKeys.PROTOCOL.getValue(), connection.getRequest().getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.STATUS.getValue(), "" + Status.STATUS_SUCCESS.getStatus()));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.MESSAGE.getValue(), Status.STATUS_SUCCESS.getMessage()));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(), "-1"));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(), "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0"));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), "text/html; charset=UTF-8"));
-        connection.getResponse().getParams().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
+        connection.getResponse().getHeaders().addParam(new Param<>(ResponseKeys.PROTOCOL.getValue(), connection.getRequest().getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.STATUS.getValue(), "" + Status.STATUS_OK.getStatus()));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.MESSAGE.getValue(), Status.STATUS_OK.getMessage()));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(), "-1"));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(), "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0"));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), "text/html; charset=UTF-8"));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
         connection.getResponse().getSession().put("server-added-unique-request-id", "SA-URID" + (new Random().nextInt()));
     }
 
