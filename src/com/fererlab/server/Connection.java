@@ -14,21 +14,12 @@ import java.util.Random;
  */
 public class Connection {
 
-    private String id;
     private Socket socket;
     private InputStream inputStream;
     private OutputStream outputStream;
     private String rawRequest;
     private Request request;
     private Response response;
-
-    public Connection() {
-        id = new Date().getTime() + "|" + new Random().nextDouble();
-    }
-
-    public String getId() {
-        return id;
-    }
 
     public InputStream getInputStream() {
         return inputStream;
