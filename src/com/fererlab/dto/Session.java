@@ -3,7 +3,7 @@ package com.fererlab.dto;
 import java.util.TreeMap;
 
 /**
- * acm 10/15/12 4:27 PM
+ * acm 10/15/12
  */
 public class Session<K extends String, V extends String> extends TreeMap<K, V> {
 

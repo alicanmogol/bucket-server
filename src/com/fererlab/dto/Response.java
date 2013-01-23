@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * acm 10/15/12 4:16 PM
+ * acm 10/15/12
  */
 public class Response implements Serializable {
 

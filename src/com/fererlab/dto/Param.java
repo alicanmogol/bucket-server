@@ -4,7 +4,7 @@ package com.fererlab.dto;
 import java.io.Serializable;
 
 /**
- * acm 10/15/12 4:32 PM
+ * acm 10/15/12
  */
 public class Param<K, V> implements Serializable {
 

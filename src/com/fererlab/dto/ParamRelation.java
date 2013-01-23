@@ -1,7 +1,7 @@
 package com.fererlab.dto;
 
 /**
- * acm 11/13/12 8:19 PM
+ * acm 11/13/12
  */
 public enum ParamRelation {
 

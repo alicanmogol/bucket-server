@@ -3,7 +3,7 @@ package com.fererlab.dto;
 import java.io.Serializable;
 
 /**
- * acm 10/15/12 4:27 PM
+ * acm 10/15/12
  */
 public class Status implements Serializable {
 
