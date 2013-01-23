@@ -1,8 +1,4 @@
-drop table if exists chat_message cascade;
+drop table if exists fer_et_product cascade;
 
-drop table if exists chat_user cascade;
-
-drop sequence if exists chat_message_seq;
-
-drop sequence if exists chat_user_seq;
+drop sequence if exists fer_et_product_seq;
 

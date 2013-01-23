@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * acm | 12/11/12 
+ * acm | 12/11/12
  */
 public class ConnectionHandler implements Runnable {
 
@@ -40,7 +40,12 @@ public class ConnectionHandler implements Runnable {
             // send the response back
             sendResponseBack();
 
-        } catch (Exception e) {
+        } catch (OutOfMemoryError e) {
+            Server.shutdown();
+            log("OutOfMemoryError occurred: " + e);
+            e.printStackTrace();
+
+        } catch (Throwable e) {
             if (connection.getOutputStream() != null) {
                 try {
                     connection.getOutputStream().write("SOCKET_EXCEPTION".getBytes());
@@ -142,22 +147,23 @@ public class ConnectionHandler implements Runnable {
             }
             // this line is the request URI with http request method
             if (ifContainsMethodSecondPartIsUri != null && ifContainsMethodSecondPartIsUri.length > 1) {
-                String[] methodUriPair = requestRow.split(" ", 2);
+                String[] methodUriPair = trim(requestRow.split(" ", 2));
                 requestUriFound = true;
 
                 // add request method
                 params.addParam(new Param<String, Object>(RequestKeys.REQUEST_METHOD.getValue(), methodUriPair[0]));
 
                 // add request URI
-                String[] uri = methodUriPair[1].split("HTTP");
-                params.addParam(new Param<String, Object>(RequestKeys.URI.getValue(), uri[0].trim()));
+                String[] uri = trim(methodUriPair[1].split("HTTP"));
+
+                params.addParam(new Param<String, Object>(RequestKeys.URI.getValue(), uri[0]));
 
                 // add protocol which is HTTP
                 params.addParam(new Param<String, Object>(RequestKeys.PROTOCOL.getValue(), "HTTP" + uri[1]));
 
                 // set protocol like "HTTP/1.1"
                 if (methodUriPair.length > 2) {
-                    params.addParam(new Param<String, Object>(RequestKeys.PROTOCOL.getValue(), methodUriPair[2].trim()));
+                    params.addParam(new Param<String, Object>(RequestKeys.PROTOCOL.getValue(), methodUriPair[2]));
                 }
 
                 // find and set request method and uri
@@ -223,9 +229,9 @@ public class ConnectionHandler implements Runnable {
 
             // these lines are the headers
             else {
-                String[] keyValuePair = requestRow.split(":", 2);
+                String[] keyValuePair = trim(requestRow.split(":", 2));
                 if (keyValuePair.length > 1) {
-                    headers.addParam(new Param<String, Object>(keyValuePair[0], keyValuePair[1].trim()));
+                    headers.addParam(new Param<String, Object>(keyValuePair[0], keyValuePair[1]));
                 } else {
                     // this is nor HTTP request neither header
                     // add it as key
@@ -239,9 +245,9 @@ public class ConnectionHandler implements Runnable {
         Session<String, String> session = new Session<>();
         if (params.containsKey(SessionKeys.COOKIE.getValue())) {
             // Cookie: datr=c4zPUICqj0F-m2asLv74xo8B; reg_ext_ref=https%3A%2F%2Fwww.google.com%2F; reg_fb_gate=https%3A%2F%2Fwww.facebook.com%2Fmumtaz.khan.311056; reg_fb_ref=https%3A%2F%2Fwww.facebook.com%2F; wd=1366x363
-            String[] cookieKeyValuePairs = params.get(SessionKeys.COOKIE.getValue()).getKey().split(";");
+            String[] cookieKeyValuePairs = trim(params.get(SessionKeys.COOKIE.getValue()).getKey().split(";"));
             for (String cookieKeyValuePair : cookieKeyValuePairs) {
-                String[] keyValuePair = cookieKeyValuePair.trim().split("=", 2);
+                String[] keyValuePair = cookieKeyValuePair.split("=", 2);
                 if (keyValuePair.length == 2) {
                     // put this key and value pair to session
                     session.put(keyValuePair[0], keyValuePair[1]);
@@ -261,7 +267,7 @@ public class ConnectionHandler implements Runnable {
         if (headers.containsKey(RequestKeys.HOST.getValue())) {
             Param<String, Object> hostParam = headers.get(RequestKeys.HOST.getValue());
             String host = hostParam.getValue().toString();
-            String[] hostNamePort = host.split(":");
+            String[] hostNamePort = trim(host.split(":"));
             if (hostNamePort.length == 2) {
                 headers.addParam(new Param<String, Object>(RequestKeys.HOST_NAME.getValue(), hostNamePort[0]));
                 headers.addParam(new Param<String, Object>(RequestKeys.HOST_PORT.getValue(), hostNamePort[1]));
@@ -273,6 +279,15 @@ public class ConnectionHandler implements Runnable {
         // set request to connection object
         connection.setRequest(new Request(params, headers, session));
 
+    }
+
+    private String[] trim(String[] strings) {
+        if (strings != null) {
+            for (int i = 0; i < strings.length; i++) {
+                strings[i] = strings[i].trim();
+            }
+        }
+        return strings;
     }
 
     private void runApplication() {

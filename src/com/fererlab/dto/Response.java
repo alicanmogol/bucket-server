@@ -113,10 +113,6 @@ public class Response implements Serializable {
     static create response method
      */
 
-    public static Response ok(Request request, String content) {
-        return create(request, content, Status.STATUS_OK);
-    }
-
     public static Response create(final Request request, String content, Status status) {
         return new Response(
                 new ParamMap<String, Param<String, Object>>(),

@@ -27,10 +27,29 @@ public class ApplicationHandler {
                     hostPort = ":" + hostPort;
                 }
                 log("found request: " + hostName + hostPort + uri);
+                long start = System.currentTimeMillis();
                 Application application = findApplicationFromURI(hostName, hostPort, uri);
+                log("application ready in " + (System.currentTimeMillis() - start) + " milliseconds");
                 if (application != null) {
                     log("found application for this uri: " + uri + ", will run application");
-                    return application.runApplication(request);
+                    String uriForApp = ((String) request.getParams().get(RequestKeys.URI.getValue()).getValue()).substring(uri.length());
+                    if (uriForApp.lastIndexOf("?") != -1) {
+                        uriForApp = uriForApp.substring(0, uriForApp.lastIndexOf("?"));
+                    }
+                    Param<String, Object> param = new Param<String, Object>(
+                            RequestKeys.URI.getValue(),
+                            uriForApp
+                    );
+                    request.getParams().put(RequestKeys.URI.getValue(), param);
+                    log("request URI for this application changed: " + request.getParams().get(RequestKeys.URI.getValue()).getValue());
+                    start = System.currentTimeMillis();
+                    Response response = application.runApplication(request);
+                    if (application.isDevelopmentModeOn()) {
+                        log("application in developmnt mode, will call stop()");
+                        application.stop();
+                    }
+                    log("application run in " + (System.currentTimeMillis() - start) + " milliseconds");
+                    return response;
                 } else {
                     log("no application assigned for this URI: " + uri + ", no application to run");
                 }
@@ -39,7 +58,7 @@ public class ApplicationHandler {
             }
             return new Response(new ParamMap<>(), new Session<String, String>(), Status.STATUS_NOT_FOUND, "");
         } catch (Exception e) {
-            return new Response(new ParamMap<>(), new Session<String, String>(), Status.STATUS_SERVICE_UNAVAILABLE, "");
+            return new Response(new ParamMap<>(), new Session<>(), Status.STATUS_SERVICE_UNAVAILABLE, "");
         }
     }
 

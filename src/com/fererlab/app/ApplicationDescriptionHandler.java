@@ -71,13 +71,18 @@ public class ApplicationDescriptionHandler {
                     applicationPathMap.get(key + ".reloadForEveryRequest").equalsIgnoreCase("true")) {
 
                 // will return Application here
-                return createApplication(key);
+                Application application = createApplication(key);
+                application.setDevelopmentMode(true);
+                application.start();
+                return application;
             }
 
             // check if the applications map has this Application
             if (!applicationsMap.containsKey(key)) {
                 // if not create and put it to the map
                 Application application = createApplication(key);
+                application.setDevelopmentMode(false);
+                application.start();
                 applicationsMap.put(key, application);
             }
 
@@ -107,6 +112,7 @@ public class ApplicationDescriptionHandler {
         if (applicationPathAndClass.lastIndexOf('|') != -1) {
             final String[] pathAndClassName = applicationPathAndClass.split("\\|");
             if (applicationPathAndClass.startsWith("jar://")) {
+                // TODO find all jars inside the jar file
                 urlsToLoad = new URL[]{
                         new File(pathAndClassName[0].substring("jar://".length())).toURI().toURL()
                 };
@@ -189,6 +195,20 @@ public class ApplicationDescriptionHandler {
                 }
 
                 return new Application() {
+
+                    @Override
+                    public void setDevelopmentMode(boolean isDevelopment) {
+                    }
+
+                    @Override
+                    public boolean isDevelopmentModeOn() {
+                        return false;
+                    }
+
+                    @Override
+                    public void start() {
+                    }
+
                     @Override
                     public Response runApplication(Request request) {
 
@@ -295,6 +315,10 @@ public class ApplicationDescriptionHandler {
                             e.printStackTrace();
                         }
                         return response;
+                    }
+
+                    @Override
+                    public void stop() {
                     }
                 };
             } else if (applicationPathAndClass.startsWith("dir://")) {

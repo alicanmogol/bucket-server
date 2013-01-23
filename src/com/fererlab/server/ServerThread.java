@@ -4,8 +4,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Iterator;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -18,9 +16,9 @@ public class ServerThread extends Thread {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
     private Integer port = 9876;
-    private Vector<Socket> sockets = new Vector<>();
     private ServerSocket serverSocket;
     private final Integer maximumThreadCount;
+    private boolean running = true;
 
     public ServerThread(Integer port, Integer maximumThreadCount) {
         this.port = port;
@@ -38,7 +36,7 @@ public class ServerThread extends Thread {
             Socket socket = null;
             InputStream inputStream = null;
             OutputStream outputStream = null;
-            while (true) {
+            while (running) {
 
                 log("will wait and accept connections");
 
@@ -46,9 +44,6 @@ public class ServerThread extends Thread {
                 socket = serverSocket.accept();
 
                 log("new client connection accepted, will create connection object and start ConnectionHandler");
-
-                // add this connection to client to sockets
-                sockets.add(socket);
 
                 // get input and output streams
                 inputStream = socket.getInputStream();
@@ -62,55 +57,25 @@ public class ServerThread extends Thread {
 
                 // pass the connection to handler and run
                 ConnectionHandler connectionHandler = new ConnectionHandler(connection);
+
+                // pool will execute this connection
                 pool.execute(connectionHandler);
+
             }
         } catch (Exception e) {
             log("serverThread with port: " + port + " got an exception, will not listen anymore, needs restart, exception: " + e);
             e.printStackTrace();
-
         }
     }
 
     public void interrupt() {
-        if (serverSocket != null && !serverSocket.isClosed()) {
+        running = false;
+        if (serverSocket != null) {
             try {
                 serverSocket.close();
             } catch (Exception e) {
             }
         }
-        if (sockets != null) {
-            try {
-                Iterator<Socket> iterator = sockets.iterator();
-                while (iterator.hasNext()) {
-                    Socket socket = iterator.next();
-                    try {
-                        iterator.remove();
-                    } catch (Exception e) {
-                    }
-                    if (socket != null) {
-                        if (socket.getInputStream() != null) {
-                            try {
-                                socket.getInputStream().close();
-                            } catch (Exception e) {
-                            }
-                        }
-                        if (socket.getOutputStream() != null) {
-                            try {
-                                socket.getOutputStream().close();
-                            } catch (Exception e) {
-                            }
-                        }
-                        try {
-                            socket.close();
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-            } catch (Exception e) {
-            }
-
-        }
-        sockets = new Vector<>();
         super.interrupt();
     }
 

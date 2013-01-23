@@ -8,6 +8,14 @@ import com.fererlab.dto.Response;
  */
 public interface Application {
 
+    void setDevelopmentMode(boolean isDevelopment);
+
+    boolean isDevelopmentModeOn();
+
+    void start();
+
     Response runApplication(final Request request);
+
+    void stop();
 
 }

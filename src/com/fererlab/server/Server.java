@@ -4,7 +4,9 @@ import com.fererlab.app.ApplicationDescriptionHandler;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -16,13 +18,15 @@ public class Server {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private HashMap<String, String> argMap = new HashMap<>();
     private Properties properties = null;
-    private ApplicationDescriptionHandler applicationDescriptionHandler;
+    private static List<ServerThread> serverThreads = new ArrayList<>();
+    private static String[] args = new String[0];
 
     public static void main(String[] args) {
         new Server(args);
     }
 
     public Server(String[] args) {
+        Server.args = args;
         parseArgs(args);
         prepare();
         runServer();
@@ -73,6 +77,7 @@ public class Server {
             for (String port : ports) {
                 log("will listen port: " + port);
                 ServerThread serverThread = new ServerThread(Integer.valueOf(port), Integer.parseInt(maximumThreadCount));
+                serverThreads.add(serverThread);
                 serverThread.start();
             }
         } catch (Exception e) {
@@ -102,6 +107,12 @@ public class Server {
         return properties;
     }
 
+    public static void shutdown() {
+        for (ServerThread serverThread : serverThreads) {
+            serverThread.interrupt();
+        }
+        System.exit(0);
+    }
 
     private void log(String log) {
         logger.info(log);
