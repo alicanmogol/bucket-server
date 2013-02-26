@@ -32,6 +32,12 @@ public class ApplicationHandler {
                 log("application ready in " + (System.currentTimeMillis() - start) + " milliseconds");
                 if (application != null) {
                     log("found application for this uri: " + uri + ", will run application");
+                    Param<String, Object> applicationUriParam = new Param<String, Object>(
+                            RequestKeys.APPLICATION_URI.getValue(),
+                            uri
+                    );
+                    request.getParams().put(RequestKeys.APPLICATION_URI.getValue(), applicationUriParam);
+
                     String uriForApp = (String.valueOf(request.getParams().get(RequestKeys.URI.getValue()).getValue())).substring(uri.length());
                     if (uriForApp.lastIndexOf("?") != -1) {
                         uriForApp = uriForApp.substring(0, uriForApp.lastIndexOf("?"));
