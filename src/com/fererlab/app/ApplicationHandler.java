@@ -15,9 +15,9 @@ public class ApplicationHandler {
         try {
             if (request.getParams().containsKey(RequestKeys.URI.getValue())) {
                 String uri = "";
-                String hostName = (String) request.getHeaders().get(RequestKeys.HOST_NAME.getValue()).getValue();
-                String hostPort = (String) request.getHeaders().get(RequestKeys.HOST_PORT.getValue()).getValue();
-                String[] uriParts = ((String) request.getParams().get(RequestKeys.URI.getValue()).getValue()).split("/");
+                String hostName = String.valueOf(request.getHeaders().get(RequestKeys.HOST_NAME.getValue()).getValue());
+                String hostPort = String.valueOf(request.getHeaders().get(RequestKeys.HOST_PORT.getValue()).getValue());
+                String[] uriParts = (String.valueOf(request.getParams().get(RequestKeys.URI.getValue()).getValue())).split("/");
                 if (uriParts.length > 1) {
                     uri = "/" + uriParts[1];
                 }
@@ -32,7 +32,7 @@ public class ApplicationHandler {
                 log("application ready in " + (System.currentTimeMillis() - start) + " milliseconds");
                 if (application != null) {
                     log("found application for this uri: " + uri + ", will run application");
-                    String uriForApp = ((String) request.getParams().get(RequestKeys.URI.getValue()).getValue()).substring(uri.length());
+                    String uriForApp = (String.valueOf(request.getParams().get(RequestKeys.URI.getValue()).getValue())).substring(uri.length());
                     if (uriForApp.lastIndexOf("?") != -1) {
                         uriForApp = uriForApp.substring(0, uriForApp.lastIndexOf("?"));
                     }
