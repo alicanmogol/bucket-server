@@ -304,7 +304,11 @@ public class ConnectionHandler implements Runnable {
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(), "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
         String returnType = "text/xml";
-        if (connection.getRequest().getHeaders().containsKey(RequestKeys.RESPONSE_TYPE.getValue()) &&
+        if (connection.getResponse().getHeaders().containsKey(ResponseKeys.RESPONSE_TYPE.getValue()) &&
+                "json".equalsIgnoreCase(String.valueOf(connection.getResponse().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue())))
+                ) {
+            returnType = "application/json";
+        } else if (connection.getRequest().getHeaders().containsKey(RequestKeys.RESPONSE_TYPE.getValue()) &&
                 "json".equalsIgnoreCase(String.valueOf(connection.getRequest().getHeaders().getValue(RequestKeys.RESPONSE_TYPE.getValue())))) {
             returnType = "application/json";
         }
