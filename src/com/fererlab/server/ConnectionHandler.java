@@ -303,7 +303,12 @@ public class ConnectionHandler implements Runnable {
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(), "-1"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(), "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
-        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), "text/html; charset=UTF-8"));
+        String returnType = "text/xml";
+        if (connection.getRequest().getHeaders().containsKey(RequestKeys.RESPONSE_TYPE.getValue()) &&
+                "json".equalsIgnoreCase(String.valueOf(connection.getRequest().getHeaders().getValue(RequestKeys.RESPONSE_TYPE.getValue())))) {
+            returnType = "application/json";
+        }
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), returnType + "; charset=UTF-8"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
         connection.getResponse().getSession().put("server-added-unique-request-id", "SA-URID" + (new Random().nextInt()));
     }
