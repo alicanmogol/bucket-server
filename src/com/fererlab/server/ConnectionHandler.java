@@ -242,7 +242,7 @@ public class ConnectionHandler implements Runnable {
         }
 
         // create, prepare and set the session to request
-        Session<String, String> session = new Session<>();
+        Session session = new Session();
         if (params.containsKey(SessionKeys.COOKIE.getValue())) {
             // Cookie: datr=c4zPUICqj0F-m2asLv74xo8B; reg_ext_ref=https%3A%2F%2Fwww.google.com%2F; reg_fb_gate=https%3A%2F%2Fwww.facebook.com%2Fmumtaz.khan.311056; reg_fb_ref=https%3A%2F%2Fwww.facebook.com%2F; wd=1366x363
             String[] cookieKeyValuePairs = trim(params.get(SessionKeys.COOKIE.getValue()).getKey().split(";"));
