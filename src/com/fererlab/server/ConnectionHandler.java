@@ -4,7 +4,6 @@ import com.fererlab.app.ApplicationHandler;
 import com.fererlab.dto.*;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -314,7 +313,6 @@ public class ConnectionHandler implements Runnable {
         }
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), returnType + "; charset=UTF-8"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
-        connection.getResponse().getSession().put("server-added-unique-request-id", "SA-URID" + (new Random().nextInt()));
     }
 
     private void sendResponseBack() throws IOException {

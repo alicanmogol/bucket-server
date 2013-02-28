@@ -76,15 +76,7 @@ public class Session extends TreeMap<String, String> {
             SecretKeySpec k = new SecretKeySpec(secretKey.getBytes(), "AES");
             c.init(Cipher.ENCRYPT_MODE, k);
             return new String(c.doFinal(value.getBytes()));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         throw new Exception("could not encrypt value!");
