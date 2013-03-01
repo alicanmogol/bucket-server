@@ -11,6 +11,7 @@ public enum SessionKeys {
     SESSION_STORED_AT("SESSION_STORED_AT"),
     SESSION_ID("SESSION_ID"),
     IS_LOGGED("IS_LOGGED"),
+    COOKIE_SIGN_KEY("fr_ck_sn_ky"),
     COOKIE("Cookie");
 
     private final String value;

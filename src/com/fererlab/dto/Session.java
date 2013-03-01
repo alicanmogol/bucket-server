@@ -3,13 +3,9 @@ package com.fererlab.dto;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.TreeMap;
@@ -19,40 +15,67 @@ import java.util.TreeMap;
  */
 public class Session extends TreeMap<String, String> {
 
-    public String COOKIE_SIGN_KEY = "_FR_CSK_";
     private BASE64Encoder base64Encoder = new BASE64Encoder();
     private BASE64Decoder base64Decoder = new BASE64Decoder();
+    private String cookieSignSecretKey = "CHANGE_THIS_KEY";
+    private String applicationCookieName = "SampleApplication";
 
     public String toCookie() {
-        StringBuilder cookie = new StringBuilder();
+        // (Base64)   Set-Cookie: SampleApplication=a2V5MT12YWx1ZTE7a2V5Mj12YWx1ZTI7
+        // (decoded)  Set-Cookie: SampleApplication=key1=value1;key2=value2;
+        StringBuilder cookieApplication = new StringBuilder();
+        cookieApplication.append("Set-Cookie: ");
+        cookieApplication.append(getApplicationCookieName());
+        cookieApplication.append("=");
+
+        StringBuilder cookieApplicationSignature = new StringBuilder();
+        cookieApplicationSignature.append("Set-Cookie: ");
+        cookieApplicationSignature.append(getApplicationCookieName());
+        cookieApplicationSignature.append("=");
+
+
         try {
             // if there is no cookie value, do not add set cookie
             if (this.size() > 0) {
-                cookie.append("Set-Cookie:  ");
+                // key1=value1;key2=value2;
+                StringBuilder applicationCookieValue = new StringBuilder();
                 for (String key : this.keySet()) {
-                    cookie.append(key);
-                    cookie.append("=");
-                    cookie.append(this.get(key));
-                    cookie.append(";");
+                    applicationCookieValue.append(key).append("=").append(get(key)).append(";");
                 }
+                String keyValues = applicationCookieValue.toString();
+                cookieApplication.append(encode(keyValues));
+                cookieApplication.append(";\n");
 
                 // sign the cookie
-                sign();
+                String signature = sign(keyValues);
 
-                // append the signiture
-                cookie.append(COOKIE_SIGN_KEY);
-                cookie.append("=");
-                cookie.append(this.get(COOKIE_SIGN_KEY));
-                cookie.append(";");
+                // append the signature
+                // (Base64)   Set-Cookie: SampleApplication_fr_ck_sn_ky=YWRhOTI0M2QyZDA5ZmQwYmQ1ZTM4MGE5ODc4Y2M3YTlhZDA2M2E0MA
+                // (decoded)  Set-Cookie: SampleApplication_fr_ck_sn_ky=ada9243d2d09fd0bd5e380a9878cc7a9ad063a40;
+                cookieApplicationSignature.append("Set-Cookie:  ");
+                cookieApplicationSignature.append(applicationCookieName);
+                cookieApplicationSignature.append("_");
+                cookieApplicationSignature.append(SessionKeys.COOKIE_SIGN_KEY.getValue());
+                cookieApplicationSignature.append("=");
+                cookieApplicationSignature.append(signature);
+                cookieApplicationSignature.append(";\n");
 
-                // line break for output
-                cookie.append("\n");
+                /*
+                Set-Cookie: SampleApplication=a2V5MT12YWx1ZTE7a2V5Mj12YWx1ZTI7;
+                Set-Cookie: SampleApplication_fr_ck_sn_ky=YWRhOTI0M2QyZDA5ZmQwYmQ1ZTM4MGE5ODc4Y2M3YTlhZDA2M2E0MA;
+                 */
+                cookieApplication.append(cookieApplicationSignature);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return cookie.toString();
+
+        /*
+
+        Set-Cookie: SampleApplication=a2V5MT12YWx1ZTE7a2V5Mj12YWx1ZTI7;\nSet-Cookie: SampleApplication_fr_ck_sn_ky=YWRhOTI0M2QyZDA5ZmQwYmQ1ZTM4MGE5ODc4Y2M3YTlhZDA2M2E0MA;\n
+         */
+        return cookieApplication.toString();
     }
 
     public String decode(String value) throws IOException {
@@ -60,7 +83,14 @@ public class Session extends TreeMap<String, String> {
     }
 
     public String encode(String value) {
-        return base64Encoder.encode(value.getBytes());
+        String encoded = base64Encoder.encode(value.getBytes());
+        while (encoded.endsWith("=")) {
+            encoded = encoded.substring(0, encoded.length() - 1);
+        }
+        if (encoded.lastIndexOf('=') != -1) {
+            encoded = encoded.substring(0, encoded.lastIndexOf('='));
+        }
+        return encoded;
     }
 
     public String decrypt(String secretKey, String value) throws Exception {
@@ -82,25 +112,18 @@ public class Session extends TreeMap<String, String> {
         throw new Exception("could not encrypt value!");
     }
 
-    private void sign() throws Exception {
+    private String sign(String value) throws Exception {
         String signValue = "";
-        StringBuilder cookieContent = new StringBuilder();
-        for (String key : this.keySet()) {
-            cookieContent.append(key);
-            cookieContent.append("=");
-            cookieContent.append(this.get(key));
-            cookieContent.append(";");
-        }
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
-            for (byte b : md.digest(cookieContent.toString().getBytes())) {
+            for (byte b : md.digest((value + getCookieSignSecretKey()).getBytes())) {
                 signValue += Integer.toString((b & 0xff) + 0x100, 16).substring(1);
             }
-            put(COOKIE_SIGN_KEY, signValue);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             throw e;
         }
+        return signValue;
     }
 
     public void putEncoded(String key, String value) {
@@ -108,7 +131,26 @@ public class Session extends TreeMap<String, String> {
     }
 
     public void putEncrypt(String secretKey, String key, String value) throws Exception {
-        put(key, encrypt(secretKey, value));
+        putEncoded(key, encrypt(secretKey, value));
     }
 
+    /*
+    setters & getters
+     */
+
+    public String getCookieSignSecretKey() {
+        return cookieSignSecretKey;
+    }
+
+    public void setCookieSignSecretKey(String cookieSignSecretKey) {
+        this.cookieSignSecretKey = cookieSignSecretKey;
+    }
+
+    public String getApplicationCookieName() {
+        return applicationCookieName;
+    }
+
+    public void setApplicationCookieName(String applicationCookieName) {
+        this.applicationCookieName = applicationCookieName;
+    }
 }
