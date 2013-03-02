@@ -241,25 +241,13 @@ public class ConnectionHandler implements Runnable {
         }
 
         // create, prepare and set the session to request
-        Session session = new Session();
+        Session session;
         if (headers.containsKey(SessionKeys.COOKIE.getValue())) {
-            // Cookie: datr=c4zPUICqj0F-m2asLv74xo8B; reg_ext_ref=https%3A%2F%2Fwww.google.com%2F; reg_fb_gate=https%3A%2F%2Fwww.facebook.com%2Fmumtaz.khan.311056; reg_fb_ref=https%3A%2F%2Fwww.facebook.com%2F; wd=1366x363
-            String[] cookieKeyValuePairs = (String.valueOf(headers.get(SessionKeys.COOKIE.getValue()).getValue())).split(";");
-            for (String cookieKeyValuePair : cookieKeyValuePairs) {
-                String[] keyValuePair = cookieKeyValuePair.split("=", 2);
-                if (keyValuePair.length == 2) {
-                    // put this key and value pair to session
-                    session.put(keyValuePair[0].trim(), keyValuePair[1].trim());
-                } else {
-                    // cookie values are key value pairs and they are represented like "key1=value1;key2=value;"
-                    // in this case the keyValuePair does not contain 2 entries separated by "="
-                    // will insert the keyValuePair as it is as a key
-                    session.put(keyValuePair[0], "");
-                }
-            }
+            session = new Session(String.valueOf(headers.get(SessionKeys.COOKIE.getValue()).getValue()));
         } else {
             // request does not have any param with key "Cookie"
-            // do nothing
+            // create an empty session object
+            session = new Session("");
         }
 
         // check if the header contains HOST

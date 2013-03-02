@@ -62,9 +62,9 @@ public class ApplicationHandler {
             } else {
                 log("request does not have any param named 'URI', no application to run");
             }
-            return new Response(new ParamMap<>(), new Session(), Status.STATUS_NOT_FOUND, "");
+            return new Response(new ParamMap<>(), new Session(""), Status.STATUS_NOT_FOUND, "");
         } catch (Exception e) {
-            return new Response(new ParamMap<>(), new Session(), Status.STATUS_SERVICE_UNAVAILABLE, "");
+            return new Response(new ParamMap<>(), new Session(""), Status.STATUS_SERVICE_UNAVAILABLE, "");
         }
     }
 
