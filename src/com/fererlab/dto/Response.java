@@ -118,8 +118,21 @@ public class Response implements Serializable {
                 new ParamMap<String, Param<String, Object>>(),
                 request.getSession(),
                 status,
-                content
+                content == null ? "" : content
         );
     }
 
+    public static Response internalServerError(Request request, Exception e) {
+        StringBuilder exception = new StringBuilder();
+        exception.append("\n<h3>\n");
+        exception.append(e.getClass().getName());
+        exception.append(": ");
+        exception.append(e.getMessage());
+        exception.append("\n</h3><h5>\n");
+        for (StackTraceElement element : e.getStackTrace()) {
+            exception.append(element.getClassName()).append(".").append(element.getMethodName()).append("(").append(element.getFileName()).append(":").append(element.getLineNumber()).append(")").append("\n<br/>\n");
+        }
+        e.printStackTrace();
+        return Response.create(request, "<h1>" + Status.STATUS_INTERNAL_SERVER_ERROR.getMessage() + "</h1>" + exception + "</h5>", Status.STATUS_INTERNAL_SERVER_ERROR);
+    }
 }
