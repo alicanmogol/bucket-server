@@ -3,6 +3,7 @@ package com.fererlab.dto;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -13,13 +14,21 @@ public class Response implements Serializable {
     private ParamMap<String, Param<String, Object>> headers;
     private Session session;
     private Status status;
-    private String content;
+    private String content = null;
+    private char[] contentChar = null;
+
+    public Response(ParamMap<String, Param<String, Object>> headers, Session session, Status status, char[] contentChar) {
+        this.headers = headers;
+        this.session = session;
+        this.status = status;
+        this.setContentChar(contentChar);
+    }
 
     public Response(ParamMap<String, Param<String, Object>> headers, Session session, Status status, String content) {
         this.headers = headers;
         this.session = session;
         this.status = status;
-        this.content = content;
+        this.setContent(content);
     }
 
     public ParamMap<String, Param<String, Object>> getHeaders() {
@@ -47,11 +56,24 @@ public class Response implements Serializable {
     }
 
     public String getContent() {
-        return content;
+        if (content != null) {
+            return content;
+        } else if (contentChar != null) {
+            return new String(contentChar);
+        }
+        return "";
     }
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public char[] getContentChar() {
+        return contentChar;
+    }
+
+    public void setContentChar(char[] contentChar) {
+        this.contentChar = contentChar;
     }
 
     @Override
@@ -61,6 +83,7 @@ public class Response implements Serializable {
                 ", session=" + session +
                 ", status=" + status +
                 ", content='" + content + '\'' +
+                ", contentChar='" + Arrays.toString(contentChar) + '\'' +
                 '}';
     }
 
@@ -95,8 +118,12 @@ public class Response implements Serializable {
         // end headers
         sb.append("\r\n");
 
-        // add content
-        sb.append(content);
+        // add contentChar if not add content
+        if (contentChar != null) {
+            sb.append(getContentChar());
+        } else {
+            sb.append(getContent());
+        }
 
         // append the delimiters
         sb.append("\n\r\n\r");
