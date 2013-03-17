@@ -1,5 +1,9 @@
 package com.fererlab.dto;
 
+import sun.security.pkcs.EncodingException;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
@@ -15,9 +19,9 @@ public class Response implements Serializable {
     private Session session;
     private Status status;
     private String content = null;
-    private char[] contentChar = null;
+    private byte[] contentChar = null;
 
-    public Response(ParamMap<String, Param<String, Object>> headers, Session session, Status status, char[] contentChar) {
+    public Response(ParamMap<String, Param<String, Object>> headers, Session session, Status status, byte[] contentChar) {
         this.headers = headers;
         this.session = session;
         this.status = status;
@@ -68,11 +72,11 @@ public class Response implements Serializable {
         this.content = content;
     }
 
-    public char[] getContentChar() {
+    public byte[] getContentChar() {
         return contentChar;
     }
 
-    public void setContentChar(char[] contentChar) {
+    public void setContentChar(byte[] contentChar) {
         this.contentChar = contentChar;
     }
 
@@ -87,7 +91,7 @@ public class Response implements Serializable {
                 '}';
     }
 
-    public byte[] write() {
+    public void write(OutputStream outputStream) {
         StringBuilder sb = new StringBuilder();
         // add response code
         sb.append(headers.get(ResponseKeys.PROTOCOL.getValue()).getValue());
@@ -120,18 +124,43 @@ public class Response implements Serializable {
 
         // add contentChar if not add content
         if (contentChar != null) {
-            sb.append(getContentChar());
+            try {
+                // write the headers
+                try {
+                    outputStream.write(sb.toString().getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    outputStream.write(sb.toString().getBytes());
+                }
+
+                //write the file content
+                outputStream.write(getContentChar());
+
+                // write the delimiters
+                outputStream.write("\n\r\n\r".getBytes());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         } else {
+
+            // append the content
             sb.append(getContent());
-        }
 
-        // append the delimiters
-        sb.append("\n\r\n\r");
+            // append the delimiters
+            sb.append("\n\r\n\r");
 
-        try {
-            return sb.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return sb.toString().getBytes();
+            // write content to output stream
+            try {
+                try {
+                    outputStream.write(sb.toString().getBytes("UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    outputStream.write(sb.toString().getBytes());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
     }

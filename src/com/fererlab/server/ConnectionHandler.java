@@ -306,9 +306,7 @@ public class ConnectionHandler implements Runnable {
     }
 
     private void sendResponseBack() throws IOException {
-        connection.getOutputStream().write(
-                connection.getResponse().write()
-        );
+        connection.getResponse().write(connection.getOutputStream());
         connection.getOutputStream().flush();
     }
 
