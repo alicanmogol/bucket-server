@@ -31,7 +31,7 @@ public class ApplicationHandler {
                 Application application = findApplicationFromURI(hostName, hostPort, uri);
                 log("application ready in " + (System.currentTimeMillis() - start) + " milliseconds");
                 if (application != null) {
-                    log("found application for this uri: " + uri + ", will run application");
+                    log("will run application for this uri: \"" + uri + "\"");
                     Param<String, Object> applicationUriParam = new Param<String, Object>(
                             RequestKeys.APPLICATION_URI.getValue(),
                             uri
@@ -47,7 +47,7 @@ public class ApplicationHandler {
                             uriForApp
                     );
                     request.getParams().put(RequestKeys.URI.getValue(), param);
-                    log("request URI for this application changed: " + request.getParams().get(RequestKeys.URI.getValue()).getValue());
+                    log("request URI for this application changed to: \"" + request.getParams().get(RequestKeys.URI.getValue()).getValue() + "\"");
                     start = System.currentTimeMillis();
                     Response response = application.runApplication(request);
                     if (application.isDevelopmentModeOn()) {
@@ -57,7 +57,7 @@ public class ApplicationHandler {
                     log("application run in " + (System.currentTimeMillis() - start) + " milliseconds");
                     return response;
                 } else {
-                    log("no application assigned for this URI: " + uri + ", no application to run");
+                    log("no application assigned for this URI: \"" + uri + "\", no application to run");
                 }
             } else {
                 log("request does not have any param named 'URI', no application to run");

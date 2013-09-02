@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ApplicationDescriptionHandler {
 
     private ConcurrentHashMap<String, Application> applicationsMap;
+    private ConcurrentHashMap<String, ClassLoader> classLoaderMap;
     private ConcurrentHashMap<String, String> applicationPathMap;
 
     private static ApplicationDescriptionHandler instance;
@@ -45,12 +46,13 @@ public class ApplicationDescriptionHandler {
 
     public void reloadApplicationDescriptions(String applicationDescriptionsConfigFile) throws IOException {
         applicationsMap = new ConcurrentHashMap<>();
+        classLoaderMap = new ConcurrentHashMap<>();
         applicationPathMap = new ConcurrentHashMap<>();
         Properties properties = new Properties();
 
         properties.load(new FileReader(applicationDescriptionsConfigFile));
         for (String propertyName : properties.stringPropertyNames()) {
-            applicationPathMap.put(propertyName, (String) properties.get(propertyName));
+            applicationPathMap.put(propertyName.trim(), ((String) properties.get(propertyName)).trim());
         }
     }
 
@@ -80,10 +82,22 @@ public class ApplicationDescriptionHandler {
             // check if the applications map has this Application
             if (!applicationsMap.containsKey(key)) {
                 // if not create and put it to the map
+                ClassLoader classLoaderPre = Thread.currentThread().getContextClassLoader();
                 Application application = createApplication(key);
+                ClassLoader classLoaderCurrent = Thread.currentThread().getContextClassLoader();
+                if (!classLoaderPre.equals(classLoaderCurrent)) {
+                    classLoaderMap.put(key, classLoaderCurrent);
+                }
                 application.setDevelopmentMode(false);
                 application.start();
                 applicationsMap.put(key, application);
+            }
+
+            // set if this application has its own ClassLoader
+            if (classLoaderMap.containsKey(key)) {
+                Thread.currentThread().setContextClassLoader(
+                        classLoaderMap.get(key)
+                );
             }
 
             // application already in map return it
@@ -340,6 +354,8 @@ public class ApplicationDescriptionHandler {
                     urlsToLoad,
                     this.getClass().getClassLoader()
             );
+            Thread.currentThread().setContextClassLoader(classLoader);
+
             classToLoad = Class.forName(className, true, classLoader);
         }
 

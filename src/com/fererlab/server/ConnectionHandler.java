@@ -22,7 +22,7 @@ public class ConnectionHandler implements Runnable {
     @Override
     public void run() {
         try {
-            log("ConnectionHandler run");
+            log("ConnectionHandler start");
 
             // first read the request and set it to connection's raw request
             readRawRequest();
