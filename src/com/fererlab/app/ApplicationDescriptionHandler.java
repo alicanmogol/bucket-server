@@ -336,7 +336,7 @@ public class ApplicationDescriptionHandler {
                     }
                 };
             } else if (applicationPathAndClass.startsWith("dir://")) {
-                urlsToLoad = new URL[]{new URL("file://" + pathAndClassName[0].substring("dir://".length()))};
+                urlsToLoad = new URL[]{new File(pathAndClassName[0].substring("dir://".length())).toURI().toURL()};
                 className = pathAndClassName[1];
             }
         }

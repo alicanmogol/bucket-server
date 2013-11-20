@@ -1,6 +1,7 @@
 package com.ferer.server.test;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -17,13 +18,30 @@ public class GenericTester {
 
     public GenericTester() {
         //runFilesTest();
-        runClassLoaderTest();
+        //runClassLoaderTest();
+        runSingleClassLoaderTest();
+    }
+
+    private void runSingleClassLoaderTest() {
+        try {
+            URL classUrl;
+            //classUrl = new URL("file:///tmp/Users/alicanmogol/projects/bucket-server-and-SampleApplication/bucket-apps/SampleApplication");
+            classUrl = new File("/tmp/Users/alicanmogol/projects/bucket-server-and-SampleApplication/bucket-apps/SampleApplication").toURI().toURL();
+            URL[] classUrls = {classUrl};
+            URLClassLoader ucl = new URLClassLoader(classUrls);
+            Class c = ucl.loadClass("com.sample.app.SampleApplication");
+            for (Field f : c.getDeclaredFields()) {
+                System.out.println("Field name" + f.getName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void runClassLoaderTest() {
         URLClassLoader classLoader = null;
         try {
-            classLoader = new URLClassLoader(new URL[]{new URL("file:///tmp/Users/alicanmogol/projects/bucket-server-and-SampleApplication/bfm/out/production/bfm/")},this.getClass().getClassLoader()) {
+            classLoader = new URLClassLoader(new URL[]{new URL("file:///tmp/Users/alicanmogol/projects/bucket-server-and-SampleApplication/bucket-apps/SampleApplication")}, this.getClass().getClassLoader()) {
                 @Override
                 public Class<?> loadClass(String name) throws ClassNotFoundException {
                     try {
@@ -51,7 +69,7 @@ public class GenericTester {
                 private byte[] loadClassFileData(String name) throws IOException {
                     // getClass().getClassLoader().getResourceAsStream(name);
                     InputStream stream = new FileInputStream(
-                            new File("/tmp/Users/alicanmogol/projects/bucket-server-and-SampleApplication/bfm/out/production/bfm/" + name)
+                            new File("/tmp/Users/alicanmogol/projects/bucket-server-and-SampleApplication/bucket-apps/SampleApplication/" + name)
                     );
                     int size = stream.available();
                     byte buff[] = new byte[size];
@@ -62,7 +80,7 @@ public class GenericTester {
                 }
             };
             Thread.currentThread().setContextClassLoader(classLoader);
-            Class classToLoad = Class.forName("com.bfm.app.action.ProductCRUDAction", true, classLoader);
+            Class classToLoad = Class.forName("com.fererlab.action.Action", true, classLoader);
             Object o = classToLoad.newInstance();
             System.out.println("classToLoad:" + classToLoad + " o: " + o);
 

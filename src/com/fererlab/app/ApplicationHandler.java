@@ -37,7 +37,6 @@ public class ApplicationHandler {
                             uri
                     );
                     request.getParams().put(RequestKeys.APPLICATION_URI.getValue(), applicationUriParam);
-
                     String uriForApp = (String.valueOf(request.getParams().get(RequestKeys.URI.getValue()).getValue())).substring(uri.length());
                     if (uriForApp.lastIndexOf("?") != -1) {
                         uriForApp = uriForApp.substring(0, uriForApp.lastIndexOf("?"));
