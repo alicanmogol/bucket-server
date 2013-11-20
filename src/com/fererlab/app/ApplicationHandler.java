@@ -50,7 +50,7 @@ public class ApplicationHandler {
                     start = System.currentTimeMillis();
                     Response response = application.runApplication(request);
                     if (application.isDevelopmentModeOn()) {
-                        log("application in developmnt mode, will call stop()");
+                        log("application in development mode, will call stop()");
                         application.stop();
                     }
                     log("application run in " + (System.currentTimeMillis() - start) + " milliseconds");

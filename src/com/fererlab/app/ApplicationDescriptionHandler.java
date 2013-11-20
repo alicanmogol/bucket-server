@@ -355,7 +355,6 @@ public class ApplicationDescriptionHandler {
                     this.getClass().getClassLoader()
             );
             Thread.currentThread().setContextClassLoader(classLoader);
-
             classToLoad = Class.forName(className, true, classLoader);
         }
 
