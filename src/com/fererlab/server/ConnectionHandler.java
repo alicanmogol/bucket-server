@@ -315,7 +315,14 @@ public class ConnectionHandler implements Runnable {
         }
         // if the request headers contains the RESPONSE_TYPE which indicates that the client ask for it
         else if (connection.getRequest().getHeaders().containsKey(RequestKeys.RESPONSE_TYPE.getValue())) {
-            returnType = String.valueOf(connection.getRequest().getHeaders().getValue(RequestKeys.RESPONSE_TYPE.getValue()));
+            if ("json".equalsIgnoreCase(String.valueOf(connection.getRequest().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue())))) {
+                returnType = "application/json";
+            } else if ("xml".equalsIgnoreCase(String.valueOf(connection.getRequest().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue())))) {
+                returnType = "text/xml";
+            } else {
+                returnType = String.valueOf(connection.getRequest().getHeaders().getValue(RequestKeys.RESPONSE_TYPE.getValue()));
+            }
+
         }
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), returnType + "; charset=UTF-8"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
