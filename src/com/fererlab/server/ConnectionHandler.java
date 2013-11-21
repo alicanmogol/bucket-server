@@ -287,19 +287,35 @@ public class ConnectionHandler implements Runnable {
         connection.getResponse().getHeaders().addParam(new Param<>(ResponseKeys.PROTOCOL.getValue(), connection.getRequest().getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.STATUS.getValue(), "" + Status.STATUS_OK.getStatus()));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.MESSAGE.getValue(), Status.STATUS_OK.getMessage()));
-        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(), "-1"));
-        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(), "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0"));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(),
+                !connection.getResponse().getHeaders().containsKey(ResponseKeys.EXPIRES.getValue()) ?
+                        "-1" :
+                        connection.getResponse().getHeaders().getValue(ResponseKeys.EXPIRES.getValue()))
+        );
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CACHE_CONTROL.getValue(),
+                !connection.getResponse().getHeaders().containsKey(ResponseKeys.CACHE_CONTROL.getValue()) ?
+                        "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, private, max-age=0" :
+                        connection.getResponse().getHeaders().getValue(ResponseKeys.CACHE_CONTROL.getValue()))
+        );
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.SERVER.getValue(), "bucket"));
-        String returnType = "text/html";
-        if (connection.getResponse().getStatus().equals(Status.STATUS_OK)) {
-            returnType = "text/xml";
-        }
-        if (connection.getResponse().getHeaders().containsKey(ResponseKeys.RESPONSE_TYPE.getValue())) {
-            returnType = String.valueOf(connection.getResponse().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue()));
 
-        } else if (connection.getRequest().getHeaders().containsKey(RequestKeys.RESPONSE_TYPE.getValue()) &&
-                "json".equalsIgnoreCase(String.valueOf(connection.getRequest().getHeaders().getValue(RequestKeys.RESPONSE_TYPE.getValue())))) {
-            returnType = "application/json";
+
+        // default response type is text/html
+        String returnType = "text/html";
+        // if response headers contains RESPONSE_TYPE, which indicates that it is added by the application
+        if (connection.getResponse().getHeaders().containsKey(ResponseKeys.RESPONSE_TYPE.getValue())) {
+            // "json" and "xml" are shortcuts for application development, just for convenience
+            if ("json".equalsIgnoreCase(String.valueOf(connection.getResponse().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue())))) {
+                returnType = "application/json";
+            } else if ("xml".equalsIgnoreCase(String.valueOf(connection.getResponse().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue())))) {
+                returnType = "text/xml";
+            } else {
+                returnType = String.valueOf(connection.getResponse().getHeaders().getValue(ResponseKeys.RESPONSE_TYPE.getValue()));
+            }
+        }
+        // if the request headers contains the RESPONSE_TYPE which indicates that the client ask for it
+        else if (connection.getRequest().getHeaders().containsKey(RequestKeys.RESPONSE_TYPE.getValue())) {
+            returnType = String.valueOf(connection.getRequest().getHeaders().getValue(RequestKeys.RESPONSE_TYPE.getValue()));
         }
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_TYPE.getValue(), returnType + "; charset=UTF-8"));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.CONTENT_LENGTH.getValue(), connection.getResponse().getContent().length() + 4)); // 4 is the number of the delimiter chars; \n\r\n\r
