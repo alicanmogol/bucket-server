@@ -103,8 +103,8 @@ public class ConnectionHandler implements Runnable {
     private void parseRequest() {
 
         // create headers and params maps
-        ParamMap<String, Param<String, Object>> headers = new ParamMap<>();
-        ParamMap<String, Param<String, Object>> params = new ParamMap<>();
+        ParamMap<String, Param<String, Object>> headers = new ParamMap<String, Param<String, Object>>();
+        ParamMap<String, Param<String, Object>> params = new ParamMap<String, Param<String, Object>>();
 
         // add defaults request method
         params.addParam(new Param<String, Object>(RequestKeys.REQUEST_METHOD.getValue(), "GET"));
@@ -284,7 +284,7 @@ public class ConnectionHandler implements Runnable {
     }
 
     private void addResponseHeaders() {
-        connection.getResponse().getHeaders().addParam(new Param<>(ResponseKeys.PROTOCOL.getValue(), connection.getRequest().getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
+        connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.PROTOCOL.getValue(), connection.getRequest().getParams().get(RequestKeys.PROTOCOL.getValue()).getValue()));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.STATUS.getValue(), "" + Status.STATUS_OK.getStatus()));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.MESSAGE.getValue(), Status.STATUS_OK.getMessage()));
         connection.getResponse().getHeaders().addParam(new Param<String, Object>(ResponseKeys.EXPIRES.getValue(),

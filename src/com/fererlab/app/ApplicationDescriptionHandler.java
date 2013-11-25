@@ -4,10 +4,7 @@ import com.fererlab.dto.*;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -15,8 +12,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.*;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,9 +40,9 @@ public class ApplicationDescriptionHandler {
     }
 
     public void reloadApplicationDescriptions(String applicationDescriptionsConfigFile) throws IOException {
-        applicationsMap = new ConcurrentHashMap<>();
-        classLoaderMap = new ConcurrentHashMap<>();
-        applicationPathMap = new ConcurrentHashMap<>();
+        applicationsMap = new ConcurrentHashMap<String, Application>();
+        classLoaderMap = new ConcurrentHashMap<String, ClassLoader>();
+        applicationPathMap = new ConcurrentHashMap<String, String>();
         Properties properties = new Properties();
 
         properties.load(new FileReader(applicationDescriptionsConfigFile));
@@ -160,7 +155,7 @@ public class ApplicationDescriptionHandler {
                 }
 
                 // define a map to hold the proxy related values
-                final Map<String, String> proxyMap = new HashMap<>();
+                final Map<String, String> proxyMap = new HashMap<String, String>();
 
                 // set the default values
                 proxyMap.put("useProxy", "SYSTEM");
@@ -228,7 +223,7 @@ public class ApplicationDescriptionHandler {
 
                         // create an empty response with service unavailable error
                         Response response = new Response(
-                                new ParamMap<>(),
+                                new ParamMap<String, Param<String, Object>>(),
                                 request.getSession(),
                                 Status.STATUS_SERVICE_UNAVAILABLE,
                                 ""
@@ -260,7 +255,7 @@ public class ApplicationDescriptionHandler {
                                 // encode
                                 base64EncodedString = base64Encoder.encode(encryptedData);
 
-                            } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
 
@@ -321,7 +316,7 @@ public class ApplicationDescriptionHandler {
                                 response = (Response) objectInputStream.readObject();
                                 objectOutputStream.close();
                                 byteArrayOutputStream.close();
-                            } catch (ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
 

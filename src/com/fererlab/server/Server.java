@@ -16,9 +16,9 @@ import java.util.logging.Logger;
 public class Server {
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
-    private HashMap<String, String> argMap = new HashMap<>();
+    private HashMap<String, String> argMap = new HashMap<String, String>();
     private Properties properties = null;
-    private static List<ServerThread> serverThreads = new ArrayList<>();
+    private static List<ServerThread> serverThreads = new ArrayList<ServerThread>();
     private static String[] args = new String[0];
 
     public static void main(String[] args) {
