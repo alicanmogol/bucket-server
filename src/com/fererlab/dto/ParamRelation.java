@@ -6,6 +6,7 @@ package com.fererlab.dto;
 public enum ParamRelation {
 
     EQ("equal"),
+    LIKE("like"),
     NE("not equal"),
     BETWEEN("between"),
     GT("greater than"),

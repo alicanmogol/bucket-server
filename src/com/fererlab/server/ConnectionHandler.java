@@ -199,6 +199,12 @@ public class ConnectionHandler implements Runnable {
                             continue;
                         }
 
+                        paramArr = paramKeyValue.split("-like-", 2);
+                        if (paramArr.length == 2) {
+                            params.addParam(new Param<String, Object>(paramArr[0], paramArr[1], ParamRelation.LIKE));
+                            continue;
+                        }
+
                         paramArr = paramKeyValue.split("((<)|(%3C))*((<)|(%3C))");
                         if (paramArr.length == 3) {
                             params.addParam(new Param<String, Object>(paramArr[1], paramArr[0], paramArr[2], ParamRelation.BETWEEN));
