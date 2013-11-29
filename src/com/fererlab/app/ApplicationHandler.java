@@ -47,7 +47,6 @@ public class ApplicationHandler {
                     );
                     request.getParams().put(RequestKeys.URI.getValue(), param);
                     log("request URI for this application changed to: \"" + request.getParams().get(RequestKeys.URI.getValue()).getValue() + "\"");
-                    start = System.currentTimeMillis();
                     Response response = application.runApplication(request);
                     if (application.isDevelopmentModeOn()) {
                         log("application in development mode, will call stop()");
