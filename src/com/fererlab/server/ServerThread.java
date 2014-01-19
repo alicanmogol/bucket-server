@@ -26,7 +26,6 @@ public class ServerThread extends Thread {
     }
 
     @Override
-
     public void run() {
         try {
             log("ServerThread will listen port: " + port);
