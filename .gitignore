@@ -9,6 +9,7 @@
 .gitignore
 .idea
 .idea/*
+*.iml
 
 # copied from original
 logs
