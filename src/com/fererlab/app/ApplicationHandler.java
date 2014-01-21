@@ -14,8 +14,7 @@ public class ApplicationHandler {
     public Response runApplication(Request request, ApplicationDescriptionHandler adh) {
         try {
             String domainName = String.valueOf(request.getHeaders().get(RequestKeys.HOST_NAME.getValue()).getValue());
-            // domains=localhost,fererlab.com,acmbay.com
-            // fererlab.com
+            // first check if this domain name is serving
             if (adh.domainExists(domainName)) {
                 log("this domain exists: " + domainName);
                 String applicationName = "";
@@ -23,10 +22,7 @@ public class ApplicationHandler {
                 if (uriParts.length > 1) {
                     applicationName = uriParts[1].trim();
                 }
-                // fererlab.com
-                // cms
-                // fererlab.com.applications=cms,sample
-
+                // change the request URI for application to handle request correctly
                 String currentRequestURI = request.getParams().getValue(RequestKeys.URI.getValue()).toString();
                 if (currentRequestURI.startsWith("/" + applicationName)) {
                     currentRequestURI = currentRequestURI.substring(("/" + applicationName).length());
@@ -38,9 +34,9 @@ public class ApplicationHandler {
                     log("request URI for this application changed to: \"" + request.getParams().get(RequestKeys.URI.getValue()).getValue() + "\"");
                 }
 
+                // run the application if exists otherwise try to run the default application if available
                 if (adh.applicationExists(domainName, applicationName)) {
                     log("will run the application: " + applicationName + " for domain: " + domainName);
-                    // fererlab.com     cms     request
                     return adh.runApplication(domainName, applicationName, request);
                 } else {
                     log("this application: " + applicationName + " does not exists for this domain: " + domainName + " will try to load default");
