@@ -1,5 +1,7 @@
 package com.fererlab.server;
 
+import com.fererlab.app.ApplicationDescriptionHandler;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -14,15 +16,17 @@ import java.util.logging.Logger;
 public class ServerThread extends Thread {
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
+    private final ApplicationDescriptionHandler applicationDescriptionHandler;
 
     private Integer port = 9876;
     private ServerSocket serverSocket;
     private final Integer maximumThreadCount;
     private boolean running = true;
 
-    public ServerThread(Integer port, Integer maximumThreadCount) {
+    public ServerThread(Integer port, Integer maximumThreadCount, ApplicationDescriptionHandler applicationDescriptionHandler) {
         this.port = port;
         this.maximumThreadCount = maximumThreadCount;
+        this.applicationDescriptionHandler = applicationDescriptionHandler;
     }
 
     @Override
@@ -53,6 +57,7 @@ public class ServerThread extends Thread {
                 connection.setInputStream(inputStream);
                 connection.setOutputStream(outputStream);
                 connection.setSocket(socket);
+                connection.setApplicationDescriptionHandler(applicationDescriptionHandler);
 
                 // pass the connection to handler and run
                 ConnectionHandler connectionHandler = new ConnectionHandler(connection);
@@ -69,6 +74,7 @@ public class ServerThread extends Thread {
 
     public void interrupt() {
         running = false;
+        applicationDescriptionHandler.stopApplications();
         if (serverSocket != null) {
             try {
                 serverSocket.close();

@@ -1,13 +1,12 @@
 package com.fererlab.server;
 
+import com.fererlab.app.ApplicationDescriptionHandler;
 import com.fererlab.dto.Request;
 import com.fererlab.dto.Response;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Date;
-import java.util.Random;
 
 /**
  * acm | 12/11/12
@@ -20,6 +19,7 @@ public class Connection {
     private String rawRequest;
     private Request request;
     private Response response;
+    private ApplicationDescriptionHandler applicationDescriptionHandler;
 
     public InputStream getInputStream() {
         return inputStream;
@@ -67,5 +67,13 @@ public class Connection {
 
     public void setResponse(Response response) {
         this.response = response;
+    }
+
+    public void setApplicationDescriptionHandler(ApplicationDescriptionHandler applicationDescriptionHandler) {
+        this.applicationDescriptionHandler = applicationDescriptionHandler;
+    }
+
+    public ApplicationDescriptionHandler getApplicationDescriptionHandler() {
+        return applicationDescriptionHandler;
     }
 }

@@ -11,83 +11,55 @@ public class ApplicationHandler {
 
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
-    public Response runApplication(Request request) {
+    public Response runApplication(Request request, ApplicationDescriptionHandler adh) {
         try {
-            if (request.getParams().containsKey(RequestKeys.URI.getValue())) {
-                String uri = "";
-                String hostName = String.valueOf(request.getHeaders().get(RequestKeys.HOST_NAME.getValue()).getValue());
-                String hostPort = String.valueOf(request.getHeaders().get(RequestKeys.HOST_PORT.getValue()).getValue());
+            String domainName = String.valueOf(request.getHeaders().get(RequestKeys.HOST_NAME.getValue()).getValue());
+            // domains=localhost,fererlab.com,acmbay.com
+            // fererlab.com
+            if (adh.domainExists(domainName)) {
+                log("this domain exists: " + domainName);
+                String applicationName = "";
                 String[] uriParts = (String.valueOf(request.getParams().get(RequestKeys.URI.getValue()).getValue())).split("/");
                 if (uriParts.length > 1) {
-                    uri = "/" + uriParts[1];
+                    applicationName = uriParts[1].trim();
                 }
-                if (hostPort.equals("80") || hostPort.equals("443")) {
-                    hostPort = "";
-                } else {
-                    hostPort = ":" + hostPort;
-                }
-                log("found request: " + hostName + hostPort + uri);
-                long start = System.currentTimeMillis();
-                Application application = findApplicationFromURI(hostName, hostPort, uri);
-                log("application ready in " + (System.currentTimeMillis() - start) + " milliseconds");
-                if (application != null) {
-                    log("will run application for this uri: \"" + uri + "\"");
-                    Param<String, Object> applicationUriParam = new Param<String, Object>(
-                            RequestKeys.APPLICATION_URI.getValue(),
-                            uri
-                    );
-                    request.getParams().put(RequestKeys.APPLICATION_URI.getValue(), applicationUriParam);
-                    String uriForApp = (String.valueOf(request.getParams().get(RequestKeys.URI.getValue()).getValue())).substring(uri.length());
-                    if (uriForApp.lastIndexOf("?") != -1) {
-                        uriForApp = uriForApp.substring(0, uriForApp.lastIndexOf("?"));
-                    }
+                // fererlab.com
+                // cms
+                // fererlab.com.applications=cms,sample
+
+                String currentRequestURI = request.getParams().getValue(RequestKeys.URI.getValue()).toString();
+                if (currentRequestURI.startsWith("/" + applicationName)) {
+                    currentRequestURI = currentRequestURI.substring(("/" + applicationName).length());
                     Param<String, Object> param = new Param<String, Object>(
                             RequestKeys.URI.getValue(),
-                            uriForApp
+                            currentRequestURI
                     );
                     request.getParams().put(RequestKeys.URI.getValue(), param);
                     log("request URI for this application changed to: \"" + request.getParams().get(RequestKeys.URI.getValue()).getValue() + "\"");
-                    Response response = application.runApplication(request);
-                    if (application.isDevelopmentModeOn()) {
-                        log("application in development mode, will call stop()");
-                        application.stop();
-                    }
-                    log("application run in " + (System.currentTimeMillis() - start) + " milliseconds");
-                    return response;
+                }
+
+                if (adh.applicationExists(domainName, applicationName)) {
+                    log("will run the application: " + applicationName + " for domain: " + domainName);
+                    // fererlab.com     cms     request
+                    return adh.runApplication(domainName, applicationName, request);
                 } else {
-                    log("no application assigned for this URI: \"" + uri + "\", no application to run");
+                    log("this application: " + applicationName + " does not exists for this domain: " + domainName + " will try to load default");
+                    if (adh.hasDefaultApplication(domainName)) {
+                        applicationName = adh.getDefaultApplication(domainName);
+                        return adh.runApplication(domainName, applicationName, request);
+                    } else {
+                        log("current domain does not have a default application");
+                    }
                 }
             } else {
-                log("request does not have any param named 'URI', no application to run");
+                log("this domain does not exists: " + domainName);
             }
+            log("will return not found message");
             return new Response(new ParamMap<String, Param<String, Object>>(), new Session(""), Status.STATUS_NOT_FOUND, "");
         } catch (Exception e) {
+            log("Exception occurred while running the application, will return service unavailable message, e: " + e.getMessage());
             return new Response(new ParamMap<String, Param<String, Object>>(), new Session(""), Status.STATUS_SERVICE_UNAVAILABLE, "");
         }
-    }
-
-    private Application findApplicationFromURI(String hostname, String port, String uri) {
-
-        //      sample-subdomain.*/sample-application
-        //      /sample-application
-        String applicationName = null;
-        //      sample-subdomain.sample-domain.com:9091/sample-application
-        if (ApplicationDescriptionHandler.getInstance().applicationExists(hostname + port + uri)) {
-            applicationName = hostname + port + uri;
-        }
-
-        //      sample-subdomain.sample-domain.com/sample-application
-        else if (ApplicationDescriptionHandler.getInstance().applicationExists(uri)) {
-            applicationName = uri;
-        }
-
-        try {
-            return ApplicationDescriptionHandler.getInstance().getApplication(applicationName);
-        } catch (NoApplicationAvailableException e) {
-            log("no application available, e: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private void log(String log) {

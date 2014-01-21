@@ -20,6 +20,8 @@ public class Server {
     private Properties properties = null;
     private static List<ServerThread> serverThreads = new ArrayList<ServerThread>();
     private static String[] args = new String[0];
+    private ApplicationDescriptionHandler applicationDescriptionHandler = new ApplicationDescriptionHandler();
+
 
     public static void main(String[] args) {
         new Server(args);
@@ -61,7 +63,7 @@ public class Server {
             log("no applications description file in arg map, using default, configFileName: " + applicationDescriptionFile);
         }
         try {
-            ApplicationDescriptionHandler.getInstance().reloadApplicationDescriptions(applicationDescriptionFile);
+            applicationDescriptionHandler.reloadApplicationDescriptions(applicationDescriptionFile);
         } catch (IOException e) {
             log("could not load the application description file, e: " + e.getMessage());
             e.printStackTrace();
@@ -76,7 +78,7 @@ public class Server {
             String maximumThreadCount = getProperties().getProperty(PropertyKeys.MAXIMUM_THREAD_COUNT.getValue());
             for (String port : ports) {
                 log("will listen port: " + port);
-                ServerThread serverThread = new ServerThread(Integer.valueOf(port), Integer.parseInt(maximumThreadCount));
+                ServerThread serverThread = new ServerThread(Integer.valueOf(port), Integer.parseInt(maximumThreadCount), applicationDescriptionHandler);
                 serverThreads.add(serverThread);
                 serverThread.start();
             }

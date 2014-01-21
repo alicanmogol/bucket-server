@@ -14,6 +14,7 @@ public class ConnectionHandler implements Runnable {
     private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
     private final Connection connection;
+    private ApplicationHandler applicationHandler = new ApplicationHandler();
 
     public ConnectionHandler(final Connection connection) {
         this.connection = connection;
@@ -284,8 +285,9 @@ public class ConnectionHandler implements Runnable {
     }
 
     private void runApplication() {
-        ApplicationHandler applicationHandler = new ApplicationHandler();
-        Response response = applicationHandler.runApplication(connection.getRequest());
+        long start = System.currentTimeMillis();
+        Response response = applicationHandler.runApplication(connection.getRequest(), connection.getApplicationDescriptionHandler());
+        log("application run in " + (System.currentTimeMillis() - start) + " milliseconds");
         connection.setResponse(response);
     }
 

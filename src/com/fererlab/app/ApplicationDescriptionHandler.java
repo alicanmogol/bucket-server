@@ -13,106 +13,90 @@ import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.*;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  * acm | 1/4/13
  */
 public class ApplicationDescriptionHandler {
 
+    private final Logger logger = Logger.getLogger(getClass().getSimpleName());
+
     private ConcurrentHashMap<String, Application> applicationsMap;
     private ConcurrentHashMap<String, ClassLoader> classLoaderMap;
     private ConcurrentHashMap<String, String> applicationPathMap;
 
+    private ConcurrentHashMap<String, List<String>> domainApplicationsMap;
+    private ConcurrentHashMap<String, String> domainDefaultApplicationMap;
+    private List<String> domainNameList;
+
     private static ApplicationDescriptionHandler instance;
-
-    private ApplicationDescriptionHandler() {
-    }
-
-    public static ApplicationDescriptionHandler getInstance() {
-        if (instance == null) {
-            instance = new ApplicationDescriptionHandler();
-        }
-        return instance;
-    }
 
     public void reloadApplicationDescriptions(String applicationDescriptionsConfigFile) throws IOException {
         applicationsMap = new ConcurrentHashMap<String, Application>();
         classLoaderMap = new ConcurrentHashMap<String, ClassLoader>();
         applicationPathMap = new ConcurrentHashMap<String, String>();
+
+        domainApplicationsMap = new ConcurrentHashMap<String, List<String>>();
+        domainDefaultApplicationMap = new ConcurrentHashMap<String, String>();
+        domainNameList = new ArrayList<String>();
         Properties properties = new Properties();
 
         properties.load(new FileReader(applicationDescriptionsConfigFile));
-        for (String propertyName : properties.stringPropertyNames()) {
-            applicationPathMap.put(propertyName.trim(), ((String) properties.get(propertyName)).trim());
-        }
-    }
 
-    public boolean applicationExists(String key) {
-        return applicationPathMap.containsKey(key);
-    }
-
-    public Application getApplication(String key) throws NoApplicationAvailableException {
-        try {
-
-            // check if the request done for the default application
-            if (key == null) {
-                key = applicationPathMap.get("default.application");
-            }
-
-            // this application will be reloaded at every request
-            if (applicationPathMap.containsKey(key + ".reloadForEveryRequest") &&
-                    applicationPathMap.get(key + ".reloadForEveryRequest").equalsIgnoreCase("true")) {
-
-                // will return Application here
-                Application application = createApplication(key);
-                application.setDevelopmentMode(true);
-                application.start();
-                return application;
-            }
-
-            // check if the applications map has this Application
-            if (!applicationsMap.containsKey(key)) {
-                // if not create and put it to the map
-                ClassLoader classLoaderPre = Thread.currentThread().getContextClassLoader();
-                Application application = createApplication(key);
-                ClassLoader classLoaderCurrent = Thread.currentThread().getContextClassLoader();
-                if (!classLoaderPre.equals(classLoaderCurrent)) {
-                    classLoaderMap.put(key, classLoaderCurrent);
+        // there should be domains key in properties
+        if (properties.containsKey("domains")) {
+            // read(remove) domains key
+            // split with comma
+            String[] domainNames = String.valueOf(properties.remove("domains")).split(",");
+            // for each domain, check for .applications (remove)
+            for (String domainName : domainNames) {
+                if (domainName == null || domainName.trim().isEmpty()) {
+                    continue;
                 }
-                application.setDevelopmentMode(false);
-                application.start();
-                applicationsMap.put(key, application);
+                domainNameList.add(domainName);
+                if (properties.containsKey(domainName + ".applications")) {
+                    // add each domain's applications to domainApplicationsMap
+                    String[] applicationNames = String.valueOf(properties.remove(domainName + ".applications")).split(",");
+                    for (String applicationName : applicationNames) {
+                        if (!domainApplicationsMap.containsKey(domainName)) {
+                            domainApplicationsMap.put(domainName, new ArrayList<String>());
+                        }
+                        domainApplicationsMap.get(domainName).add(applicationName);
+                    }
+                }
+                // for each domain, check for .default (remove)
+                if (properties.containsKey(domainName + ".default")) {
+                    // add each domain with its default application to domainDefaultApplicationMap
+                    String defaultApplication = String.valueOf(properties.remove(domainName + ".default"));
+                    domainDefaultApplicationMap.put(domainName, defaultApplication);
+                }
             }
-
-            // set if this application has its own ClassLoader
-            if (classLoaderMap.containsKey(key)) {
-                Thread.currentThread().setContextClassLoader(
-                        classLoaderMap.get(key)
-                );
-            }
-
-            // application already in map return it
-            return applicationsMap.get(key);
-
-        } catch (Exception e) {
-            throw new NoApplicationAvailableException(e.getClass() + "; " + e.getMessage());
+        }
+        for (String propertyName : properties.stringPropertyNames()) {
+            applicationPathMap.put(propertyName.trim(), (String.valueOf(properties.get(propertyName))).trim());
         }
     }
 
-    private Application createApplication(String key) throws ClassNotFoundException, IllegalAccessException, InstantiationException, MalformedURLException {
+    public boolean applicationExists(String domainName, String applicationName) {
+        return domainApplicationsMap.containsKey(domainName) && domainApplicationsMap.get(domainName).contains(applicationName);
+    }
+
+    private Application createApplication(String applicationName) throws ClassNotFoundException, IllegalAccessException, InstantiationException, MalformedURLException {
         //      key=value
         //      /sample-application=jar:///tmp/home/alican/projects/fererlab/SampleApplication/out/artifacts/SampleApplication.jar|com.sample.app.SampleApplication
         //
         //      key=value
-        //      /sample-application=jar
-        //      /sample-application.jar=jar:///tmp/home/alican/projects/fererlab/SampleApplication/out/artifacts/SampleApplication.jar|com.sample.app.SampleApplication
-        String applicationPathAndClass = applicationPathMap.get(key);
-        if (applicationPathMap.containsKey(key + "." + applicationPathMap.get(key))) {
-            applicationPathAndClass = applicationPathMap.get(key + "." + applicationPathMap.get(key));
+        //      cms=dir
+        //      cmd.dir=dir:///tmp/artifacts/SampleApplication.jar|com.sample.app.SampleApplication
+        String applicationPathAndClass = applicationPathMap.get(applicationName);
+        if (applicationPathMap.containsKey(applicationName + "." + applicationPathMap.get(applicationName))) {
+            applicationPathAndClass = applicationPathMap.get(applicationName + "." + applicationPathMap.get(applicationName));
+            log("applicationPathMap contains key.value, key: " + applicationName + " applicationPathAndClass: " + applicationPathAndClass);
+        } else {
+            log("applicationPathMap does not contain key.value, key: " + applicationName + " applicationPathAndClass: " + applicationPathAndClass + " applicationPathAndClass: " + applicationPathAndClass);
         }
 
         URL[] urlsToLoad = null;
@@ -161,12 +145,12 @@ public class ApplicationDescriptionHandler {
                 proxyMap.put("useProxy", "SYSTEM");
 
                 // first check if there is an entry for proxy settings
-                if (applicationPathMap.containsKey(key + "." + applicationPathMap.get(key) + ".proxy")) {
+                if (applicationPathMap.containsKey(applicationName + "." + applicationPathMap.get(applicationName) + ".proxy")) {
 
                     // .proxy entry exists, it may be in some forms like; "", "NO_PROXY", or "PROTOCOL://USER:PASS@IP:PORT"
                     // "socks://username:password@127.0.0.1:8080"
                     // first check if there is a protocol exists
-                    String[] typeAndProxy = applicationPathMap.get(key + "." + applicationPathMap.get(key) + ".proxy").split("://");
+                    String[] typeAndProxy = applicationPathMap.get(applicationName + "." + applicationPathMap.get(applicationName) + ".proxy").split("://");
 
                     // this means either proxy entry is empty string or "NO_PROXY"
                     if (typeAndProxy.length == 1) {
@@ -333,6 +317,7 @@ public class ApplicationDescriptionHandler {
             } else if (applicationPathAndClass.startsWith("dir://")) {
                 urlsToLoad = new URL[]{new File(pathAndClassName[0].substring("dir://".length())).toURI().toURL()};
                 className = pathAndClassName[1];
+                log("#urlsToLoad: " + urlsToLoad.length + " className: " + className);
             }
         }
 
@@ -341,9 +326,11 @@ public class ApplicationDescriptionHandler {
             className = applicationPathAndClass;
         }
 
+        log("className: " + className);
         Class classToLoad;
         if (urlsToLoad == null) {
             classToLoad = Class.forName(className);
+            log("urlsToLoad null, classToLoad: " + classToLoad);
         } else {
             URLClassLoader classLoader = new URLClassLoader(
                     urlsToLoad,
@@ -351,9 +338,75 @@ public class ApplicationDescriptionHandler {
             );
             Thread.currentThread().setContextClassLoader(classLoader);
             classToLoad = Class.forName(className, true, classLoader);
+            log("urlsToLoad not null, classToLoad: " + classToLoad);
         }
 
         return (Application) classToLoad.newInstance();
     }
 
+    private void log(String log) {
+        logger.info(log);
+    }
+
+    public boolean domainExists(String domainName) {
+        return domainNameList.contains(domainName);
+    }
+
+    public boolean hasDefaultApplication(String domainName) {
+        return domainDefaultApplicationMap.containsKey(domainName);
+    }
+
+    public String getDefaultApplication(String domainName) {
+        return domainDefaultApplicationMap.get(domainName);
+    }
+
+    public Response runApplication(String domainName, String applicationName, Request request) throws NoApplicationAvailableException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
+        // fererlab.com     cms     request
+        Application application;
+        // this application will be reloaded at every request
+        if (applicationPathMap.containsKey(applicationName + ".reloadForEveryRequest") && applicationPathMap.get(applicationName + ".reloadForEveryRequest").equalsIgnoreCase("true")) {
+            // will return Application here
+            log("reloadForEveryRequest set to true, application in development mode");
+            application = createApplication(applicationName);
+            application.setDevelopmentMode(true);
+            application.start();
+            Response response = application.runApplication(request);
+            if (application.isDevelopmentModeOn()) {
+                application.stop();
+            }
+            return response;
+        } else {
+            // key should be:   fererlab.com.cms
+            String key = domainName + "." + applicationName;
+            // check if the applications map has this Application
+            if (!applicationsMap.containsKey(key)) {
+                // if not create and put it to the map
+                ClassLoader classLoaderPre = Thread.currentThread().getContextClassLoader();
+                application = createApplication(applicationName);
+                ClassLoader classLoaderCurrent = Thread.currentThread().getContextClassLoader();
+                if (!classLoaderPre.equals(classLoaderCurrent)) {
+                    classLoaderMap.put(key, classLoaderCurrent);
+                }
+                application.setDevelopmentMode(false);
+                application.start();
+                applicationsMap.put(key, application);
+            }
+            // set if this application has its own ClassLoader
+            if (classLoaderMap.containsKey(key)) {
+                Thread.currentThread().setContextClassLoader(
+                        classLoaderMap.get(key)
+                );
+            }
+            // application already in map return it
+            application = applicationsMap.get(key);
+            return application.runApplication(request);
+        }
+    }
+
+    public void stopApplications() {
+        for (String key : applicationsMap.keySet()) {
+            Application application = applicationsMap.get(key);
+            application.stop();
+        }
+    }
 }
