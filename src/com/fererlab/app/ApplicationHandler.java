@@ -22,20 +22,20 @@ public class ApplicationHandler {
                 if (uriParts.length > 1) {
                     applicationName = uriParts[1].trim();
                 }
-                // change the request URI for application to handle request correctly
-                String currentRequestURI = request.getParams().getValue(RequestKeys.URI.getValue()).toString();
-                if (currentRequestURI.startsWith("/" + applicationName)) {
-                    currentRequestURI = currentRequestURI.substring(("/" + applicationName).length());
-                    Param<String, Object> param = new Param<String, Object>(
-                            RequestKeys.URI.getValue(),
-                            currentRequestURI
-                    );
-                    request.getParams().put(RequestKeys.URI.getValue(), param);
-                    log("request URI for this application changed to: \"" + request.getParams().get(RequestKeys.URI.getValue()).getValue() + "\"");
-                }
 
                 // run the application if exists otherwise try to run the default application if available
                 if (adh.applicationExists(domainName, applicationName)) {
+                    // change the request URI for application to handle request correctly
+                    String currentRequestURI = request.getParams().getValue(RequestKeys.URI.getValue()).toString();
+                    if (currentRequestURI.startsWith("/" + applicationName)) {
+                        currentRequestURI = currentRequestURI.substring(("/" + applicationName).length());
+                        Param<String, Object> param = new Param<String, Object>(
+                                RequestKeys.URI.getValue(),
+                                currentRequestURI
+                        );
+                        request.getParams().put(RequestKeys.URI.getValue(), param);
+                        log("request URI for this application changed to: \"" + request.getParams().get(RequestKeys.URI.getValue()).getValue() + "\"");
+                    }
                     log("will run the application: " + applicationName + " for domain: " + domainName);
                     return adh.runApplication(domainName, applicationName, request);
                 } else {
