@@ -29,6 +29,9 @@ public class ApplicationHandler {
                     String currentRequestURI = request.getParams().getValue(RequestKeys.URI.getValue()).toString();
                     if (currentRequestURI.startsWith("/" + applicationName)) {
                         currentRequestURI = currentRequestURI.substring(("/" + applicationName).length());
+                        if (currentRequestURI.lastIndexOf("?") != -1) {
+                            currentRequestURI = currentRequestURI.substring(0, currentRequestURI.lastIndexOf("?"));
+                        }
                         Param<String, Object> param = new Param<String, Object>(
                                 RequestKeys.URI.getValue(),
                                 currentRequestURI
