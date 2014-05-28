@@ -156,7 +156,10 @@ public class ConnectionHandler implements Runnable {
                 // add request URI
                 String[] uri = trim(methodUriPair[1].split("HTTP"));
 
-                params.addParam(new Param<String, Object>(RequestKeys.URI.getValue(), uri[0]));
+                // find and set request method and uri
+                String[] uriAndParams = uri[0].split("\\?", 2);
+
+                params.addParam(new Param<String, Object>(RequestKeys.URI.getValue(), uriAndParams[0]));
 
                 // add protocol which is HTTP
                 params.addParam(new Param<String, Object>(RequestKeys.PROTOCOL.getValue(), "HTTP" + uri[1]));
@@ -165,9 +168,6 @@ public class ConnectionHandler implements Runnable {
                 if (methodUriPair.length > 2) {
                     params.addParam(new Param<String, Object>(RequestKeys.PROTOCOL.getValue(), methodUriPair[2]));
                 }
-
-                // find and set request method and uri
-                String[] uriAndParams = uri[0].split("\\?", 2);
 
                 // add params
                 if (uriAndParams.length > 1) {
@@ -249,8 +249,13 @@ public class ConnectionHandler implements Runnable {
 
         // create, prepare and set the session to request
         Session session;
-        if (headers.containsKey(SessionKeys.COOKIE.getValue())) {
-            session = new Session(String.valueOf(headers.get(SessionKeys.COOKIE.getValue()).getValue()));
+        if (headers.containsKey(SessionKeys.COOKIE.getValue().toLowerCase()) ||
+                headers.containsKey(SessionKeys.COOKIE.getValue())) {
+            try {
+                session = new Session(String.valueOf(headers.get(SessionKeys.COOKIE.getValue()).getValue()));
+            } catch (Exception e) {
+                session = new Session(String.valueOf(headers.get(SessionKeys.COOKIE.getValue().toLowerCase()).getValue()));
+            }
         } else {
             // request does not have any param with key "Cookie"
             // create an empty session object

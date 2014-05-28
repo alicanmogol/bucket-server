@@ -13,7 +13,7 @@ public enum SessionKeys {
     IS_LOGGED("IS_LOGGED"),
     COOKIE_SIGN_KEY("fr_ck_sn_ky"),
     GROUP_NAMES("GROUP_NAMES"),
-    COOKIE("cookie");
+    COOKIE("Cookie");
 
     private final String value;
 
